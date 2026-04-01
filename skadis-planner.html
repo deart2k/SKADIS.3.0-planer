@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SKADIS 3.0 Planner</title>
+<style>
+:root {
+  --bg:#0d0d0c;--s1:#161615;--s2:#1e1e1d;--s3:#272725;
+  --b1:#2a2a27;--b2:#383835;
+  --t1:#e5e3dc;--t2:#96948c;--t3:#565450;
+  --acc:#e55c25;--acc2:#efa04e;
+  --cf:#2e2005;--cb:#b07828;--ct:#c8902e;
+  --tf:#0a1e0e;--tb:#286830;--tt:#48a058;
+  --sf:#080e1e;--sb:#284878;--st:#4878b0;
+  --df:#08121c;--db:#1c3c58;--dt:#3878a8;
+  --mf:#221206;--mb:#d4a050;--mt:#e8b860;
+  --mono: 'SF Mono','Fira Mono','Consolas','Menlo',monospace;
+  --sans: -apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--sans);font-size:13px}
+.app{display:grid;grid-template-columns:290px 1fr;grid-template-rows:50px 1fr;height:100vh;overflow:hidden}
+header{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid var(--b1);background:var(--s1)}
+.logo{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--acc);letter-spacing:.07em}
+.logo b{color:var(--t3);font-weight:400}
+.sub{font-size:10px;color:var(--t3)}
+.hbadge{margin-left:auto;font-family:var(--mono);font-size:10px;background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:3px 9px;color:var(--t2)}
+aside{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden}
+.sc-scroll{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
+.panel{padding:13px 15px;border-bottom:1px solid var(--b1)}
+.ptitle{font-family:var(--mono);font-size:9px;font-weight:500;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:11px}
+.srow{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.srow label{font-size:10px;color:var(--t2);width:50px;flex-shrink:0}
+.srow input[type=range]{flex:1;accent-color:var(--acc);cursor:pointer}
+.vbadge{font-family:var(--mono);font-size:10px;font-weight:500;background:var(--s3);border:1px solid var(--b1);border-radius:3px;padding:2px 7px;color:var(--acc);min-width:56px;text-align:right}
+.shint{font-size:9px;color:var(--t3);padding-left:57px;margin-top:-4px;margin-bottom:7px}
+.density-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--t3);margin-top:2px;padding:0 1px}
+.density-info{font-size:10px;color:var(--acc2);margin-top:6px;font-family:var(--mono)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.sc{background:var(--bg);border:1px solid var(--b1);border-radius:4px;padding:7px 9px}
+.sv{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--t1)}
+.sl{font-size:9px;color:var(--t3);margin-top:1px}
+.bsec{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);padding:8px 0 3px;border-top:1px solid var(--b1)}
+.bsec:first-child{border-top:none;padding-top:0}
+.brow{display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:1px solid #181816}
+.brow:last-child{border:none}
+.bcnt{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--acc);min-width:24px;text-align:right;flex-shrink:0;margin-top:1px}
+.bn{font-size:10px;color:var(--t1);flex:1;line-height:1.35}
+.bz{font-family:var(--mono);font-size:8px;color:var(--t3)}
+.bsw{width:8px;height:8px;border-radius:2px;flex-shrink:0;margin-top:3px}
+.bsw.c{border-radius:50%}.bsw.d{transform:rotate(45deg);border-radius:1px}
+main{overflow:auto;display:flex;flex-direction:column}
+.tabs{display:flex;background:var(--s1);border-bottom:1px solid var(--b1);flex-shrink:0}
+.tab{padding:9px 13px;font-size:10px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;border:none;background:none;font-family:var(--sans);white-space:nowrap;transition:all .12s}
+.tab.on{color:var(--t1);border-bottom:2px solid var(--acc)}
+.tab:hover:not(.on){color:var(--t2)}
+.view{flex:1;padding:18px;display:none;overflow:auto}
+.view.on{display:block}
+.cw{display:inline-block;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:18px;max-width:100%;margin-bottom:14px}
+.ctop{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:9px;font-family:var(--mono);font-size:9px;color:var(--t3)}
+canvas{display:block}
+.legrow{display:flex;gap:10px;margin-top:9px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--t3)}
+.ld{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.lc{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ldiam{width:7px;height:7px;transform:rotate(45deg);border-radius:1px;flex-shrink:0}
+.note{background:var(--s2);border:1px solid var(--b1);border-left:3px solid var(--acc2);border-radius:0 5px 5px 0;padding:9px 12px;font-size:10px;color:var(--t2);line-height:1.65;margin-bottom:13px}
+.note strong{color:var(--t1);font-weight:500}
+.cat-h:first-child{margin-top:0}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:5px}
+.pc{background:var(--s2);border:1px solid var(--b1);border-radius:5px;padding:8px 5px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.pc:hover{border-color:var(--b2)}
+.pcw{height:50px;display:flex;align-items:center;justify-content:center}
+.pcn{font-size:9px;font-weight:500;color:var(--t1);text-align:center;line-height:1.3}
+.pcs{font-family:var(--mono);font-size:8px;color:var(--t3);text-align:center}
+.pcp{font-size:8px;color:var(--acc2);text-align:center}
+.pcc{font-family:var(--mono);font-size:9px;font-weight:500;color:var(--acc);background:var(--bg);border:1px solid var(--b1);border-radius:8px;padding:1px 6px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <a href="https://makerworld.com/ru/models/2572477-ikea-skadis-modular-pegboard-3-0" target="_blank" rel="noopener" style="text-decoration:none"><div class="logo" style="transition:opacity .15s" onmouseover="this.style.opacity='.65'" onmouseout="this.style.opacity='1'">SKADIS<b>.3.0</b></div></a>
+  <div class="sub" data-i18n="subtitle">Planner · Model by AdamKozakGrafika</div>
+  <div class="hbadge" id="hbadge">–</div>
+  <button id="langbtn" onclick="toggleLang()" style="margin-left:8px;font-family:var(--mono);font-size:10px;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:3px 9px;color:var(--t2);cursor:pointer;transition:all .12s" onmouseover="this.style.color='var(--t1)'" onmouseout="this.style.color='var(--t2)'">RU</button>
+</header>
+<aside>
+  <div class="panel">
+    <div class="ptitle" data-i18n="boardSize">Board size</div>
+    <div class="srow"><label data-i18n="width">Width</label><input type="range" id="ws" min="3" max="150" value="20" oninput="go()"><div class="vbadge" id="wv">—</div></div>
+    <div class="shint" id="wh"></div>
+    <div class="srow"><label data-i18n="height">Height</label><input type="range" id="hs" min="3" max="150" value="15" oninput="go()"><div class="vbadge" id="hv">—</div></div>
+    <div class="shint" id="hh"></div>
+  </div>
+  <div class="panel">
+    <div class="ptitle" data-i18n="mountDensity">Mount density</div>
+    <div class="srow" style="margin-bottom:3px">
+      <label data-i18n="span">Span</label>
+      <input type="range" id="dens" min="1" max="5" value="3" oninput="go()">
+      <div class="vbadge" id="dv">—</div>
+    </div>
+    <div class="density-labels"><span data-i18n="dense">Dense</span><span data-i18n="sparse">Sparse</span></div>
+    <div class="density-info" id="di"></div>
+    <div style="font-size:9px;color:var(--t3);margin-top:6px;line-height:1.6" data-i18n="vertHint">Vertical span is stricter — sag from load.</div>
+  </div>
+  <div class="panel">
+    <div class="ptitle" data-i18n="total">Total</div>
+    <div class="sgrid">
+      <div class="sc"><div class="sv" id="st1">—</div><div class="sl" data-i18n="allParts">All parts</div></div>
+      <div class="sc"><div class="sv" id="st2">—</div><div class="sl" data-i18n="modules">Modules</div></div>
+      <div class="sc"><div class="sv" id="st3">—</div><div class="sl" data-i18n="connectors">Connectors</div></div>
+      <div class="sc"><div class="sv" id="st4">—</div><div class="sl" data-i18n="brackets">Brackets</div></div>
+    </div>
+    <div style="font-size:9px;color:var(--t3);margin-top:7px;padding:5px 8px;background:var(--bg);border:1px solid var(--b1);border-radius:4px">
+      ⚑ <span id="st5">—</span> <span data-i18n="mountPts">mount points</span> · <span id="st6">—</span>
+    </div>
+  </div>
+  <div class="sc-scroll">
+    <div class="panel"><div class="ptitle" data-i18n="printList">Print list</div><div id="bom"></div></div>
+  </div>
+</aside>
+<main>
+  <div class="tabs">
+    <button class="tab on" onclick="showTab('board')" data-i18n="tabBoard">Board layout</button>
+    <button class="tab"    onclick="showTab('mount')" data-i18n="tabMount">Wall mounting</button>
+    <button class="tab"    onclick="showTab('cat')"   data-i18n="tabCat">Parts catalog</button>
+  </div>
+  <div class="view on" id="vboard">
+    <div class="cw">
+      <div class="ctop"><span data-i18n="frontView">Front view</span><strong id="bsz" style="margin-left:auto;color:var(--acc)"></strong></div>
+      <canvas id="cvs"></canvas>
+      <div class="legrow">
+        <div class="leg"><div class="ld" style="background:var(--cf);border:1px solid var(--cb)"></div><span data-i18n="legCorner">Corner module (pl.25+27)</span></div>
+        <div class="leg"><div class="ld" style="background:var(--tf);border:1px solid var(--tb)"></div><span data-i18n="legTopbot">Top/bot module (pl.17–20)</span></div>
+        <div class="leg"><div class="ld" style="background:var(--sf);border:1px solid var(--sb)"></div><span data-i18n="legSide">Side module (pl.21–24)</span></div>
+        <div class="leg"><div class="ld" style="background:var(--df);border:1px solid var(--db)"></div><span data-i18n="legModule">Module (pl.01–16)</span></div>
+        <div class="leg"><div class="ld" style="background:#261500;border:2px solid #c8900a"></div><span data-i18n="legMount">⚑ Bracket (mounting.3mf)</span></div>
+        <div class="leg"><div class="lc" style="background:var(--acc)"></div><span data-i18n="legConn">Connector</span></div>
+        <div class="leg"><div class="ldiam" style="background:#d4a050;border:1px solid #806010"></div><span data-i18n="legScrew">Wall screw</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="view" id="vmount">
+    <div class="cw" style="display:inline-block;max-width:100%">
+      <div class="ctop">
+        <span data-i18n="rearView">Rear view · bracket layout</span>
+        <strong id="msz" style="margin-left:auto;color:var(--acc)"></strong>
+      </div>
+      <canvas id="cvsm" style="max-width:100%"></canvas>
+      <div class="legrow">
+        <div class="leg"><div style="width:11px;height:11px;border-radius:2px;background:#1c1005;border:2px solid #c09030;flex-shrink:0"></div><span data-i18n="legCM">Corner mounts</span></div>
+        <div class="leg"><div style="width:9px;height:13px;border-radius:2px;background:#101830;border:1.5px solid #305090;flex-shrink:0"></div><span data-i18n="legSM">Side mounts</span></div>
+        <div class="leg"><div style="width:13px;height:9px;border-radius:2px;background:#0c1422;border:1.5px solid #1e4870;flex-shrink:0"></div><span data-i18n="legTBM">Top & bottom mounts</span></div>
+        <div class="leg"><div style="width:12px;height:12px;background:#0e1420;border:1.5px solid #263040;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);flex-shrink:0"></div><span data-i18n="legMBM">Mid board mount</span></div>
+      </div>
+      <div id="mcnts" style="font-size:10px;color:var(--t2);margin-top:10px;font-family:var(--mono)"></div>
+    </div>
+  </div>
+  <div class="view" id="vcat"><div id="catc"></div></div>
+</main>
+</div>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// i18n
+// ═══════════════════════════════════════════════════════════════
+let LANG = 'en';
+
+const I18N = {
+  en: {
+    subtitle:'Planner · Model by AdamKozakGrafika', boardSize:'Board size',
+    width:'Width', height:'Height', mountDensity:'Mount density',
+    span:'Span', dense:'Dense', sparse:'Sparse',
+    vertHint:'Vertical span is stricter — sag from load.',
+    total:'Total', allParts:'All parts', modules:'Modules',
+    connectors:'Connectors', brackets:'Brackets', mountPts:'mount points',
+    printList:'Print list', tabBoard:'Board layout', tabMount:'Wall mounting',
+    tabCat:'Parts catalog', frontView:'Front view',
+    rearView:'Rear view · bracket layout',
+    legCorner:'Corner module (pl.25+27)', legTopbot:'Top/bot module (pl.17–20)',
+    legSide:'Side module (pl.21–24)', legModule:'Module (pl.01–16)',
+    legMount:'⚑ Bracket (mounting.3mf)', legConn:'Connector', legScrew:'Wall screw',
+    legCM:'Corner mounts', legSM:'Side mounts', legTBM:'Top & bottom mounts', legMBM:'Mid board mount',
+    densNames:['Very dense','Dense','Normal','Sparse','Very sparse'],
+    cells:'cells', plate:'pl.',
+    secModules:'Modules', secConn:'Connectors', secMount:'Wall mounting',
+    shts:'sheets of', perSheet:'per sheet',
+    shGroup:n=>`— ${n} pcs.`,
+    mountTotal:(n,c,s,tb,m)=>`Total mount points: <b style="color:var(--acc2)">${n}</b> &nbsp;·&nbsp; Corner ×${c} &nbsp; Side ×${s} &nbsp; Top/bot ×${tb} &nbsp; Mid ×${m} &nbsp;·&nbsp; Wall screws: <b style="color:var(--acc2)">${n}</b>`,
+    catModule:'Module · center', catTopbot:'Top & bottom module',
+    catSide:'Side module', catCorner:'Corner module · pl.25+27',
+    catConn:'Connector · pl.26 ·', catConnSheets:n=>`${n} sheet${n>1?'s':''}`,
+    catMountH:'Mounting kits — mounting.3mf · 7 plates',
+    catMountNote:`Each mount point = <b>2 parts</b>:<br>🔲 <b>Bracket</b> (pl. 01–04) — attaches to board from behind<br>🔲 <b>Distance connector</b> (pl. 05–07) — creates ~20mm wall gap, screw goes through it`,
+    varTLBL:'TL+BL', varTRBR:'TR+BR',
+  },
+  ru: {
+    subtitle:'Планировщик · Модель от AdamKozakGrafika', boardSize:'Размеры доски',
+    width:'Ширина', height:'Высота', mountDensity:'Плотность крепления',
+    span:'Пролёт', dense:'Часто', sparse:'Редко',
+    vertHint:'Вертикаль жёстче горизонтали — провисание от нагрузки.',
+    total:'Итого', allParts:'Всего деталей', modules:'Модулей',
+    connectors:'Коннект.', brackets:'Кронштейнов', mountPts:'точек крепления',
+    printList:'Список для печати', tabBoard:'Схема доски', tabMount:'Крепление к стене',
+    tabCat:'Каталог деталей', frontView:'Вид спереди',
+    rearView:'Вид сзади · расположение кронштейнов',
+    legCorner:'Corner module (пл.25+27)', legTopbot:'Top/bot module (пл.17–20)',
+    legSide:'Side module (пл.21–24)', legModule:'Module (пл.01–16)',
+    legMount:'⚑ Кронштейн (mounting.3mf)', legConn:'Connector', legScrew:'Шуруп в стену',
+    legCM:'Corner mounts', legSM:'Side mounts', legTBM:'Top & bottom mounts', legMBM:'Mid board mount',
+    densNames:['Очень часто','Часто','Нормально','Редко','Очень редко'],
+    cells:'ячеек', plate:'пл.',
+    secModules:'Модули', secConn:'Коннекторы', secMount:'Крепление к стене',
+    shts:'листа по', perSheet:'шт/лист',
+    shGroup:n=>`— ${n} шт.`,
+    mountTotal:(n,c,s,tb,m)=>`Итого точек крепления: <b style="color:var(--acc2)">${n}</b> &nbsp;·&nbsp; Corner ×${c} &nbsp; Side ×${s} &nbsp; Top/bot ×${tb} &nbsp; Mid ×${m} &nbsp;·&nbsp; Шурупов в стену: <b style="color:var(--acc2)">${n}</b>`,
+    catModule:'Module · центр', catTopbot:'Top & bottom module',
+    catSide:'Side module', catCorner:'Corner module · пл.25+27',
+    catConn:'Connector · пл.26 ·', catConnSheets:n=>`${n} листа`,
+    catMountH:'Монтажные комплекты — mounting.3mf · 7 пластин',
+    catMountNote:`Каждая точка крепления = <b>2 детали</b>:<br>🔲 <b>Кронштейн</b> (пл. 01–04) — крепится к доске сзади<br>🔲 <b>Distance connector</b> (пл. 05–07) — создаёт зазор ~20мм от стены, через него шуруп`,
+    varTLBL:'TL+BL', varTRBR:'TR+BR',
+  }
+};
+
+function t(key, ...args) {
+  const v = I18N[LANG][key];
+  return typeof v === 'function' ? v(...args) : (v ?? key);
+}
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    const val = t(key);
+    if (val !== undefined) el.textContent = val;
+  });
+  document.getElementById('langbtn').textContent = LANG === 'en' ? 'RU' : 'EN';
+}
+
+function toggleLang() {
+  LANG = LANG === 'en' ? 'ru' : 'en';
+  applyI18n();
+  go(); // re-render all dynamic content
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+const S = 40; // mm per cell
+const MAX = 4; // max cells per module = 160mm
+
+const DENS = [
+  {h:4,  v:3,  label:'~160×120mm'},
+  {h:7,  v:5,  label:'~280×200mm'},
+  {h:10, v:7,  label:'~400×280mm'},
+  {h:15, v:10, label:'~600×400mm'},
+  {h:20, v:15, label:'~800×600mm'},
+];
+
+// ─── Exact plate numbers from Bambu Studio screenshots ────────
+// File 1: SKADIS_modular_board_3_0_mini_comp.3mf
+const PLATES_MODULES = {
+  // standard modules — plate by size (WxH)
+  std: {
+    '40x40':'01',  '40x80':'02',  '40x120':'03', '40x160':'04',
+    '80x40':'05',  '80x80':'06',  '80x120':'07', '80x160':'08',
+    '120x40':'09', '120x80':'10', '120x120':'11','120x160':'12',
+    '160x40':'13', '160x80':'14', '160x120':'15','160x160':'16',
+  },
+  // top & bottom border modules (always 40mm tall)
+  topbot: { '40x40':'17', '80x40':'18', '120x40':'19', '160x40':'20' },
+  // side border modules (always 40mm wide)
+  side:   { '40x40':'21', '40x80':'22', '40x120':'23', '40x160':'24' },
+  // corner modules
+  corner_tl: '25', corner_tr: '27',
+  corner_bl: '25', corner_br: '27',
+  // connectors
+  connector: '26',
+};
+
+// File 2: SKADIS_modular_board_3_0_mounting.3mf
+const PLATES_MOUNTING = {
+  corner_bracket: '01',  // corner mounts + corner special module
+  side_bracket:   '02',  // side mounts + side special module
+  topbot_bracket: '03',  // top & bottom mounts + topbot special module
+  mid_bracket:    '04',  // mid board mount + mid special module
+  corner_dist:    '05',
+  sideedge_dist:  '06',
+  mid_dist:       '07',
+};
+
+const MOUNTS = {
+  corner: {
+    bracket: 'Corner mounts',           bpl: PLATES_MOUNTING.corner_bracket,
+    dist:    'Corner module distance connector', dpl: PLATES_MOUNTING.corner_dist,
+    specPlate: PLATES_MOUNTING.corner_bracket,
+  },
+  side: {
+    bracket: 'Side mounts',             bpl: PLATES_MOUNTING.side_bracket,
+    dist:    'Side, top & bottom module distance connector', dpl: PLATES_MOUNTING.sideedge_dist,
+    specPlate: PLATES_MOUNTING.side_bracket,
+  },
+  topbot: {
+    bracket: 'Top & bottom mounts',     bpl: PLATES_MOUNTING.topbot_bracket,
+    dist:    'Side, top & bottom module distance connector', dpl: PLATES_MOUNTING.sideedge_dist,
+    specPlate: PLATES_MOUNTING.topbot_bracket,
+  },
+  mid: {
+    bracket: 'Mid board mount',         bpl: PLATES_MOUNTING.mid_bracket,
+    dist:    'Mid board module distance connector', dpl: PLATES_MOUNTING.mid_dist,
+    specPlate: PLATES_MOUNTING.mid_bracket,
+  },
+};
+
+function plateFor(role, wMm, hMm, variant) {
+  const key = `${wMm}x${hMm}`;
+  if (role === 'std')    return PLATES_MODULES.std[key]    ?? '??';
+  if (role === 'topbot') return PLATES_MODULES.topbot[key] ?? '??';
+  if (role === 'side')   return PLATES_MODULES.side[key]   ?? '??';
+  if (role === 'corner') {
+    if (variant === 'TL' || variant === 'BL') return PLATES_MODULES.corner_tl;
+    return PLATES_MODULES.corner_tr;
+  }
+  return '??';
+}
+
+const RF={corner:'#2a1c04', topbot:'#082010', side:'#080e20', std:'#08121e', mount:'#2a1a04'};
+const RB={corner:'#c08030', topbot:'#30783a', side:'#2c5090', std:'#1e4068', mount:'#c8900a'};
+const RT={corner:'#d8a040', topbot:'#58b870', side:'#5898d0', std:'#4890c8', mount:'#e8b860'};
+const RLAB={corner:'Corner module',topbot:'Top/bot module',side:'Side module',std:'Module',mount:'Спец. 40×40'};
+
+function hkOf(m) {
+  if (m.role === 'mount') return `mount_${m.mountKey}`;
+  return `${m.role}|${m.wC*S}|${m.hC*S}`;
+}
+
+let G = null; // global state
+let HK = null;  // board highlight key
+let MHK = null; // mount highlight key
+
+function redrawBoard() {
+  if (!G) return;
+  drawBoard(G.wC, G.hC, G.lay, G.pts);
+}
+function redrawMount() {
+  if (!G) return;
+  drawMount(G.wC, G.hC, G.lay, G.pts);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MOUNT POINTS
+// ═══════════════════════════════════════════════════════════════
+function pickBounds(bounds, total, gap) {
+  const s = new Set([0, total]);
+  let last = 0;
+  while (last < total) {
+    const cands = bounds.filter(b => b > last && b <= last + gap);
+    if (!cands.length) { const n = bounds.find(b => b > last); if (n!=null){s.add(n);last=n;}else break; }
+    else { const best = Math.max(...cands); s.add(best); last = best; }
+  }
+  return [...s].sort((a,b)=>a-b);
+}
+
+function computeMountPts(wC, hC, maxH, maxV) {
+  // Full connector grid boundaries (every 1 cell on perimeter, every MAX inside)
+  const colAll = allBounds(wC, MAX);
+  const rowAll = allBounds(hC, MAX);
+  const xPts = pickBounds(colAll, wC, maxH);
+  const yPts = pickBounds(rowAll, hC, maxV);
+  const pts = [];
+  for (const x of xPts) for (const y of yPts) {
+    const oL=x===0,oR=x===wC,oT=y===0,oB=y===hC;
+    const isCorner=(oL||oR)&&(oT||oB);
+    const isEdge=!isCorner&&(oL||oR||oT||oB);
+    const dir=isEdge?(oT||oB?'topbot':'side'):null;
+    const key=isCorner?'corner':isEdge?dir:'mid';
+    pts.push({x,y,key});
+  }
+  return pts;
+}
+
+function allBounds(total, step) {
+  const b = new Set([0, total, 1, total-1]);
+  let p = 1;
+  const inner = total - 2;
+  let rem = inner;
+  while (rem > 0) { const s = Math.min(rem, step); p += s; b.add(p); rem -= s; }
+  return [...b].sort((a,b)=>a-b);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LAYOUT — mount-aware: special 40×40 cells at each mount position
+// ═══════════════════════════════════════════════════════════════
+function segsWithMountCells(total, mountPositions, maxStep) {
+  // Ensure 1-cell segments at each mount position
+  const forced = new Set([0, total]);
+  for (const m of mountPositions) {
+    if (m >= 0 && m < total)   forced.add(m);
+    if (m > 0  && m+1 <= total) forced.add(m+1);
+  }
+  const breaks = [...forced].sort((a,b)=>a-b);
+  const result = [];
+  for (let i = 0; i < breaks.length-1; i++) {
+    const from=breaks[i], to=breaks[i+1], span=to-from;
+    let rem=span, pos=from;
+    while (rem > 0) { const s=Math.min(rem,maxStep); result.push({start:pos,size:s}); pos+=s; rem-=s; }
+  }
+  return result;
+}
+
+function borderMtInner(pts, side, wC, hC, innerLen) {
+  let filtered;
+  if (side === 'left')   filtered = pts.filter(p => p.x===0   && p.y>0 && p.y<hC).map(p => p.y-1);
+  if (side === 'right')  filtered = pts.filter(p => p.x===wC  && p.y>0 && p.y<hC).map(p => p.y-1);
+  if (side === 'top')    filtered = pts.filter(p => p.y===0   && p.x>0 && p.x<wC).map(p => p.x-1);
+  if (side === 'bottom') filtered = pts.filter(p => p.y===hC  && p.x>0 && p.x<wC).map(p => p.x-1);
+  return (filtered || []).filter(v => v >= 0 && v < innerLen);
+}
+
+function computeLayout(wC, hC, pts) {
+  const iW = wC - 2, iH = hC - 2;
+  const mods = [];
+
+  // Helper: is there a mount point at this exact board-edge position?
+  const hasMountAt = (x, y) => pts.some(p => p.x===x && p.y===y);
+
+  // ── CORNERS — corner mount (пл.01) OR corner module (пл.25/27)
+  const cornerDefs = [
+    {x:0,    y:0,    v:'TL', mx:0,  my:0 },
+    {x:wC-1, y:0,    v:'TR', mx:wC, my:0 },
+    {x:0,    y:hC-1, v:'BL', mx:0,  my:hC},
+    {x:wC-1, y:hC-1, v:'BR', mx:wC, my:hC},
+  ];
+  for (const c of cornerDefs) {
+    const isMount = hasMountAt(c.mx, c.my);
+    mods.push({x:c.x, y:c.y, wC:1, hC:1,
+      role: isMount ? 'mount' : 'corner',
+      mountKey: isMount ? 'corner' : null,
+      variant: c.v});
+  }
+
+  // ── BORDER SIDES — side mount (пл.02) OR side module (пл.21–24)
+  if (iH > 0) {
+    const leftMt  = borderMtInner(pts,'left',  wC,hC,iH);
+    const rightMt = borderMtInner(pts,'right', wC,hC,iH);
+    for (const seg of segsWithMountCells(iH, leftMt,  MAX)) {
+      const isMount = leftMt.includes(seg.start) && seg.size===1;
+      mods.push({x:0,    y:1+seg.start, wC:1, hC:seg.size,
+        role: isMount ? 'mount' : 'side', mountKey: isMount ? 'side' : null});
+    }
+    for (const seg of segsWithMountCells(iH, rightMt, MAX)) {
+      const isMount = rightMt.includes(seg.start) && seg.size===1;
+      mods.push({x:wC-1, y:1+seg.start, wC:1, hC:seg.size,
+        role: isMount ? 'mount' : 'side', mountKey: isMount ? 'side' : null});
+    }
+  }
+
+  // ── BORDER TOP/BOTTOM — top/bot mount (пл.03) OR top/bot module (пл.17–20)
+  if (iW > 0) {
+    const topMt = borderMtInner(pts,'top',    wC,hC,iW);
+    const botMt = borderMtInner(pts,'bottom', wC,hC,iW);
+    for (const seg of segsWithMountCells(iW, topMt, MAX)) {
+      const isMount = topMt.includes(seg.start) && seg.size===1;
+      mods.push({x:1+seg.start, y:0,    wC:seg.size, hC:1,
+        role: isMount ? 'mount' : 'topbot', mountKey: isMount ? 'topbot' : null});
+    }
+    for (const seg of segsWithMountCells(iW, botMt, MAX)) {
+      const isMount = botMt.includes(seg.start) && seg.size===1;
+      mods.push({x:1+seg.start, y:hC-1, wC:seg.size, hC:1,
+        role: isMount ? 'mount' : 'topbot', mountKey: isMount ? 'topbot' : null});
+    }
+  }
+
+  // ── CENTER — mid board mount (пл.04) OR standard module (пл.01–16)
+  if (iW > 0 && iH > 0) {
+    const innerX = pts.filter(p=>p.x>0&&p.x<wC&&p.y>0&&p.y<hC).map(p=>p.x-1);
+    const innerY = pts.filter(p=>p.x>0&&p.x<wC&&p.y>0&&p.y<hC).map(p=>p.y-1);
+    const colSegs = segsWithMountCells(iW, innerX, MAX);
+    const rowSegs = segsWithMountCells(iH, innerY, MAX);
+    for (const rs of rowSegs) for (const cs of colSegs) {
+      const isMount = innerX.includes(cs.start) && cs.size===1 &&
+                      innerY.includes(rs.start) && rs.size===1;
+      mods.push({x:1+cs.start, y:1+rs.start, wC:cs.size, hC:rs.size,
+        role: isMount ? 'mount' : 'std', mountKey: isMount ? 'mid' : null});
+    }
+  }
+
+  // ── CONNECTOR GRID — only at ACTUAL module boundary intersections
+  // Collect real column and row boundaries from the placed modules
+  const realColB = new Set();
+  const realRowB = new Set();
+  for (const m of mods) {
+    realColB.add(m.x);
+    realColB.add(m.x + m.wC);
+    realRowB.add(m.y);
+    realRowB.add(m.y + m.hC);
+  }
+  const cbArr = [...realColB].sort((a,b)=>a-b);
+  const rbArr = [...realRowB].sort((a,b)=>a-b);
+  const conns = [];
+  for (const ry of rbArr) for (const cx of cbArr) conns.push({x:cx, y:ry});
+
+  return {mods, conns, colB:cbArr, rowB:rbArr};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BOM
+// ═══════════════════════════════════════════════════════════════
+function computeBOM(lay, pts) {
+  const mg = {};
+  for (const m of lay.mods) {
+    const eff = m.role === 'mount'
+      ? `mount_${m.mountKey}`
+      : `${m.role}|${m.wC*S}|${m.hC*S}`;
+    if (!mg[eff]) mg[eff] = {role:m.role, wMm:m.wC*S, hMm:m.hC*S, mountKey:m.mountKey||null, n:0};
+    mg[eff].n++;
+  }
+  // Count brackets from actual mount modules in layout (not from pts)
+  const cN = lay.mods.filter(m=>m.role==='mount'&&m.mountKey==='corner').length;
+  const sN = lay.mods.filter(m=>m.role==='mount'&&m.mountKey==='side').length;
+  const tN = lay.mods.filter(m=>m.role==='mount'&&m.mountKey==='topbot').length;
+  const mN = lay.mods.filter(m=>m.role==='mount'&&m.mountKey==='mid').length;
+  return {groups:Object.values(mg), connCnt:lay.conns.length, connSheets:Math.ceil(lay.conns.length/25), cN, sN, tN, mN, total:cN+sN+tN+mN};
+}
+
+function highlightBOMRow(hk) {
+  document.querySelectorAll('.brow[data-hk]').forEach(el => {
+    const active = hk && el.dataset.hk === hk;
+    el.style.background = active ? 'rgba(255,255,255,.07)' : '';
+    el.style.outline = active ? '1px solid rgba(255,255,255,.25)' : '';
+    if (active) el.scrollIntoView({block:'nearest', behavior:'smooth'});
+  });
+}
+
+function highlightBOMMount(mk) {
+  // Highlight all BOM rows with mount_mk key
+  const hk = mk ? `mount_${mk}` : null;
+  highlightBOMRow(hk);
+}
+
+function bomHK(role, wMm, hMm, mountKey) {
+  if (role === 'mount') return 'mount_' + mountKey;
+  return `${role}|${wMm}|${hMm}`;
+}
+
+function renderBOM(b, lay) {
+  const FILE1 = 'SKADIS_modular_board_3_0_mini_comp.3mf';
+  const FILE2 = 'SKADIS_modular_board_3_0_mounting.3mf';
+
+  // Regular modules only (no mount replacements)
+  const normals = b.groups
+    .filter(g => g.role !== 'mount')
+    .sort((a,z) => { const O={corner:0,topbot:1,side:2,std:3}; return (O[a.role]??9)-(O[z.role]??9) || z.wMm*z.hMm-a.wMm*a.hMm; });
+
+  let h = `<div class="bsec">${t('secModules')} · ${FILE1}</div>`;
+
+  const corners    = normals.filter(g => g.role === 'corner');
+  const nonCorners = normals.filter(g => g.role !== 'corner');
+
+  // Corner modules — split TL+BL (пл.25) vs TR+BR (пл.27)
+  // Count from actual layout mods
+  const cTL = lay.mods.filter(m=>m.role==='corner'&&(m.variant==='TL'||m.variant==='BL')).length;
+  const cTR = lay.mods.filter(m=>m.role==='corner'&&(m.variant==='TR'||m.variant==='BR')).length;
+  if (cTL > 0) h += row(RF.corner, RB.corner, cTL, 'Corner module 40×40mm', `40×40×5.2mm · ${t('plate')} 25 · ${t('varTLBL')}`, false, false, 'corner|40|40');
+  if (cTR > 0) h += row(RF.corner, RB.corner, cTR, 'Corner module 40×40mm', `40×40×5.2mm · ${t('plate')} 27 · ${t('varTRBR')}`, false, false, 'corner|40|40');
+
+  for (const g of nonCorners) {
+    const pl = plateFor(g.role, g.wMm, g.hMm);
+    const roleLabel = {topbot:'Top & bottom module', side:'Side module', std:'Module'}[g.role] ?? 'Module';
+    const hk = `${g.role}|${g.wMm}|${g.hMm}`;
+    h += row(RF[g.role], RB[g.role], g.n, `${roleLabel} ${g.wMm}×${g.hMm}mm`, `${g.wMm}×${g.hMm}×5.2mm · ${t('plate')} ${pl}`, false, false, hk);
+  }
+
+  // ── Connectors
+  const pl26 = PLATES_MODULES.connector;
+  h += `<div class="bsec">${t('secConn')} · ${FILE1} · ${t('plate')} ${pl26}</div>`;
+  h += row('#200e06', '#e55c25', b.connCnt, 'Connector', `20×20×3.5mm · ${b.connSheets} ${t('shts')} 25 ${t('perSheet')}`, true, false, '');
+
+  // ── Mounting
+  h += `<div class="bsec">${t('secMount')} · ${FILE2}</div>`;
+
+  const mrows = [
+    {key:'corner', n:b.cN, f:'#1c1005', bdr:'#c09030', isDiam:true},
+    {key:'side',   n:b.sN, f:'#0e1828', bdr:'#3060a0'},
+    {key:'topbot', n:b.tN, f:'#0a1220', bdr:'#1e4878'},
+    {key:'mid',    n:b.mN, f:'#0a1018', bdr:'#283848'},
+  ];
+
+  for (const r of mrows) {
+    if (!r.n) continue;
+    const M = MOUNTS[r.key];
+    const mountHK = `mount_${r.key}`;
+    const hdrEnter = `onmouseenter="MHK='${r.key}';if(document.getElementById('vmount').classList.contains('on'))redrawMount();highlightBOMMount('${r.key}')"`;
+    const hdrLeave = `onmouseleave="MHK=null;if(document.getElementById('vmount').classList.contains('on'))redrawMount();highlightBOMMount(null)"`;
+    h += `<div style="font-size:9px;color:var(--t2);padding:6px 0 2px;font-weight:500;border-top:1px solid #1a1a18;margin-top:2px;cursor:pointer" ${hdrEnter} ${hdrLeave}>${M.bracket} ${t('shGroup',r.n)}</div>`;
+    h += row(r.f, r.bdr, r.n, M.bracket, `${t('plate')} ${M.bpl} · mounting.3mf`, false, r.isDiam, mountHK);
+    h += row('#0c1018', '#384858', r.n, M.dist, `${t('plate')} ${M.dpl} · mounting.3mf`, false, false, mountHK);
+  }
+
+  document.getElementById('bom').innerHTML = h;
+}
+
+function row(fill, border, n, name, sub, isCircle=false, isDiam=false, hk='') {
+  let sw;
+  if (isDiam)       sw = `<div class="bsw d" style="background:${fill};border:1px solid ${border}"></div>`;
+  else if(isCircle) sw = `<div class="bsw c" style="background:${fill};border:1px solid ${border}"></div>`;
+  else              sw = `<div class="bsw"   style="background:${fill};border:1px solid ${border}"></div>`;
+  const hkAttr = hk ? `data-hk="${hk}"` : '';
+  let enter='', leave='';
+  if (hk) {
+    const isMount = hk.startsWith('mount_');
+    const mk = isMount ? hk.replace('mount_','') : null;
+    const mountTrigger = isMount
+      ? `MHK='${mk}';if(document.getElementById('vmount').classList.contains('on'))redrawMount();`
+      : '';
+    const mountReset = isMount
+      ? `MHK=null;if(document.getElementById('vmount').classList.contains('on'))redrawMount();`
+      : '';
+    enter = `onmouseenter="${mountTrigger}redrawBoard();highlightBOMRow('${hk}')"`;
+    leave = `onmouseleave="${mountReset}HK=null;redrawBoard();highlightBOMRow(null)"`;
+  }
+  return `<div class="brow" ${hkAttr} ${enter} ${leave} style="cursor:${hk?'pointer':'default'}">${sw}
+    <div class="bcnt">×${n}</div>
+    <div><div class="bn">${name}</div><div class="bz">${sub}</div></div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DRAW HELPERS
+// ═══════════════════════════════════════════════════════════════
+function rr(ctx,x,y,w,h,r){
+  if(r<=0){ctx.beginPath();ctx.rect(x,y,w,h);return;}
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+}
+function diam(ctx,cx,cy,r){ctx.beginPath();ctx.moveTo(cx,cy-r);ctx.lineTo(cx+r,cy);ctx.lineTo(cx,cy+r);ctx.lineTo(cx-r,cy);ctx.closePath();}
+function csz(wC,hC,maxW,maxH){return Math.max(5,Math.min(34,Math.floor(Math.min((maxW-80)/wC,(maxH-60)/hC))));}
+function fmt(mm){if(mm>=1000)return(mm/1000).toFixed(2).replace(/\.?0+$/,'')+'м';if(mm>=100)return Math.round(mm/10)+'см';return mm+'мм';}
+
+// ═══════════════════════════════════════════════════════════════
+// FRONT VIEW DRAW
+// ═══════════════════════════════════════════════════════════════
+function drawBoard(wC,hC,lay,pts){
+  const cvs=document.getElementById('cvs');
+  const {mods,conns}=lay;
+  const maxW=Math.min(window.innerWidth-310,1500),maxH=Math.min(window.innerHeight-200,900);
+  const MX=34,MY=24,C=csz(wC,hC,maxW,maxH);
+  const tiny=C<7,small=C<11,CR=Math.min(C*.6,11);
+
+  const W=wC*C+MX*2,H=hC*C+MY*2;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  cvs.width=W*dpr;cvs.height=H*dpr;cvs.style.width=W+'px';cvs.style.height=H+'px';
+  const ctx=cvs.getContext('2d');ctx.scale(dpr,dpr);
+
+  ctx.fillStyle='#08080a';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#0c0c0a';rr(ctx,MX,MY,wC*C,hC*C,CR);ctx.fill();
+
+  if(!tiny){ctx.fillStyle='#1a1a16';for(let gx=0;gx<=wC;gx++)for(let gy=0;gy<=hC;gy++){ctx.beginPath();ctx.arc(MX+gx*C,MY+gy*C,.7,0,Math.PI*2);ctx.fill();}}
+
+  if(C>=11){
+    const tw=wC>60?20:wC>30?10:wC>15?5:2,th=hC>60?20:hC>30?10:hC>15?5:2;
+    ctx.font=`${Math.max(7,Math.min(9,C/4))}px monospace`;ctx.fillStyle='#303028';
+    ctx.textAlign='center';for(let x=0;x<=wC;x+=tw)ctx.fillText(x*S,MX+x*C,MY-6);
+    ctx.textAlign='right';for(let y=0;y<=hC;y+=th)ctx.fillText(y*S,MX-5,MY+y*C+3);
+  }
+
+  ctx.save();rr(ctx,MX,MY,wC*C,hC*C,CR);ctx.clip();
+
+  for(const m of mods){
+    const px=MX+m.x*C,py=MY+m.y*C,pw=m.wC*C,ph=m.hC*C;
+    const role=m.role;
+    const isC=role==='corner', isMt=role==='mount';
+    const br=(isC||isMt)?Math.min(CR*.7,3):0.5;
+
+    // Mount positions: warm amber to stand out from regular modules
+    ctx.fillStyle = isMt ? '#261500' : (RF[role]||'#080c14');
+    rr(ctx,px+.5,py+.5,pw-1,ph-1,br); ctx.fill();
+
+    if(isMt){
+      ctx.strokeStyle='#c8900a'; ctx.lineWidth=Math.max(1.5,Math.min(3,C*.1));
+    } else {
+      ctx.strokeStyle=RB[role]||'#1c3858'; ctx.lineWidth=isC?1.1:.5;
+    }
+    rr(ctx,px+.5,py+.5,pw-1,ph-1,br); ctx.stroke();
+
+    // Diagonal hatch on mount modules
+    if(isMt&&!tiny&&pw>=5&&ph>=5){
+      ctx.save();
+      rr(ctx,px+1.5,py+1.5,pw-3,ph-3,Math.max(0,br-1)); ctx.clip();
+      ctx.strokeStyle='rgba(200,140,15,.28)'; ctx.lineWidth=0.8;
+      const step=Math.max(3,C*.15);
+      for(let d=-(pw+ph);d<pw+ph;d+=step){
+        ctx.beginPath(); ctx.moveTo(px+d,py); ctx.lineTo(px+d+ph,py+ph); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // SKADIS slots
+    if(!tiny&&pw>=4&&ph>=4){
+      const hcols=m.wC,hrows=m.hC;
+      ctx.fillStyle=isC?'#0c0800':isMt?'#120a00':'#06101a';
+      for(let c=0;c<hcols;c++)for(let r=0;r<hrows;r++){
+        const hx=px+(c+.5)*(pw/hcols),hy=py+(r+.5)*(ph/hrows);
+        if((isC||isMt)&&hcols===1&&hrows===1){
+          const hr=Math.max(1.5,Math.min(4,C*.11));
+          ctx.beginPath();ctx.arc(hx,hy,hr,0,Math.PI*2);ctx.fill();
+          if(!small){ctx.strokeStyle='#706010';ctx.lineWidth=.55;ctx.beginPath();ctx.arc(hx,hy,hr*1.6,0,Math.PI*2);ctx.stroke();}
+        } else {
+          ctx.beginPath();ctx.ellipse(hx,hy,Math.max(1,pw/hcols*.075),Math.max(1.5,ph/hrows*.13),0,0,Math.PI*2);ctx.fill();
+        }
+      }
+    }
+
+    // Label
+    if(!small&&pw>=14&&ph>=9){
+      const lbl = isMt ? `⚑` : `${m.wC*S}×${m.hC*S}`;
+      const fs=Math.max(6,Math.min(9,Math.min(pw/(lbl.length+1)*.9,ph/2.2)));
+      ctx.fillStyle = isMt ? '#e8b060' : (RT[role]||'#3878a8');
+      ctx.font=`500 ${fs}px monospace`; ctx.textAlign='center';
+      ctx.fillText(lbl,px+pw/2,py+ph/2+2);
+    }
+    if(isC&&!small&&C>=13){
+      ctx.fillStyle=RT.corner; ctx.font=`${Math.max(6,Math.min(9,C*.24))}px sans-serif`; ctx.textAlign='center';
+      ctx.fillText('⚓',px+pw/2,py+ph/2-C*.14);
+    }
+  }
+
+  // Seam lines
+  if(!tiny){
+    ctx.setLineDash([1,3]);ctx.strokeStyle='#12182a';ctx.lineWidth=.4;
+    for(const x of lay.colB)if(x>0&&x<wC){ctx.beginPath();ctx.moveTo(MX+x*C,MY);ctx.lineTo(MX+x*C,MY+hC*C);ctx.stroke();}
+    for(const y of lay.rowB)if(y>0&&y<hC){ctx.beginPath();ctx.moveTo(MX,MY+y*C);ctx.lineTo(MX+wC*C,MY+y*C);ctx.stroke();}
+    ctx.setLineDash([]);
+  }
+
+  // Highlight overlay — draw bright outline on matching modules
+  if (HK) {
+    ctx.save(); rr(ctx,MX,MY,wC*C,hC*C,CR); ctx.clip();
+    for (const m of mods) {
+      if (hkOf(m) !== HK) continue;
+      const px=MX+m.x*C, py=MY+m.y*C, pw=m.wC*C, ph=m.hC*C;
+      // bright fill overlay
+      ctx.fillStyle='rgba(255,255,255,.08)';
+      rr(ctx,px+.5,py+.5,pw-1,ph-1,1); ctx.fill();
+      // thick white border
+      ctx.strokeStyle='rgba(255,255,255,.7)';
+      ctx.lineWidth=Math.max(1.5, Math.min(3, C*.1));
+      rr(ctx,px+.5,py+.5,pw-1,ph-1,1); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  ctx.restore();
+
+  ctx.strokeStyle='#24241e';ctx.lineWidth=1.5;rr(ctx,MX,MY,wC*C,hC*C,CR);ctx.stroke();
+
+  // Connectors
+  const CR2=Math.max(1.5,Math.min(3.5,C*.1));
+  ctx.save();rr(ctx,MX,MY,wC*C,hC*C,CR);ctx.clip();
+  ctx.fillStyle='#e55c25';
+  for(const c of conns){ctx.beginPath();ctx.arc(MX+c.x*C,MY+c.y*C,CR2,0,Math.PI*2);ctx.fill();}
+  ctx.restore();
+
+  // Mount diamonds
+  const DR=Math.max(2.5,Math.min(6,C*.18));
+  for(const p of pts){
+    const px=MX+p.x*C,py=MY+p.y*C;
+    const r=DR*(p.key==='corner'?1:p.key==='mid'?.65:.78);
+    const fc=p.key==='corner'?'rgba(208,148,42,.92)':p.key==='side'?'rgba(55,95,170,.8)':p.key==='topbot'?'rgba(38,72,130,.75)':'rgba(32,55,100,.7)';
+    ctx.fillStyle=fc;ctx.strokeStyle=p.key==='corner'?'#806010':'#203060';ctx.lineWidth=.8;
+    diam(ctx,px,py,r);ctx.fill();diam(ctx,px,py,r);ctx.stroke();
+    if(p.key==='corner'){ctx.fillStyle='#fffef0';ctx.beginPath();ctx.arc(px,py,1,0,Math.PI*2);ctx.fill();}
+  }
+
+  document.getElementById('bsz').textContent=`${fmt(wC*S)} × ${fmt(hC*S)}`;
+  document.getElementById('hbadge').textContent=`${fmt(wC*S)} × ${fmt(hC*S)}`;
+
+  // Canvas hit detection
+  cvs.onmousemove = (e) => {
+    const rect = cvs.getBoundingClientRect();
+    const scaleX = cvs.width / dpr / rect.width;
+    const scaleY = cvs.height / dpr / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+    let found = null;
+    for (const m of mods) {
+      const px=MX+m.x*C, py=MY+m.y*C, pw=m.wC*C, ph=m.hC*C;
+      if (mx>=px && mx<=px+pw && my>=py && my<=py+ph) { found=hkOf(m); break; }
+    }
+    if (found !== HK) {
+      HK = found;
+      redrawBoard();
+      highlightBOMRow(HK);
+    }
+  };
+  cvs.onmouseleave = () => {
+    if (HK) { HK=null; redrawBoard(); highlightBOMRow(null); }
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MOUNT REAR VIEW
+// ═══════════════════════════════════════════════════════════════
+function drawMount(wC,hC,lay,pts){
+  const cvs=document.getElementById('cvsm');
+  const maxW=Math.min(window.innerWidth-310,1500),maxH=Math.min(window.innerHeight-320,780);
+  const MX=34,MY=24,C=csz(wC,hC,maxW,maxH),CR=Math.min(C*.6,11);
+  const W=wC*C+MX*2,H=hC*C+MY*2;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  cvs.width=W*dpr;cvs.height=H*dpr;cvs.style.width=W+'px';cvs.style.height=H+'px';
+  const ctx=cvs.getContext('2d');ctx.scale(dpr,dpr);
+  ctx.fillStyle='#050506';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#0a0a08';rr(ctx,MX,MY,wC*C,hC*C,CR);ctx.fill();
+  if(C>=8){ctx.strokeStyle='#111110';ctx.lineWidth=.4;const s=C*.3;for(let x=0;x<wC;x++)for(let y=0;y<hC;y++){const cx=MX+(x+.5)*C,cy=MY+(y+.5)*C;ctx.strokeRect(cx-s/2,cy-s/2,s,s);}}
+  if(C>=11){const tw=wC>60?20:wC>30?10:wC>15?5:2,th=hC>60?20:hC>30?10:hC>15?5:2;ctx.font=`${Math.max(7,Math.min(9,C/4))}px monospace`;ctx.fillStyle='#252520';ctx.textAlign='center';for(let x=0;x<=wC;x+=tw)ctx.fillText(x*S,MX+x*C,MY-6);ctx.textAlign='right';for(let y=0;y<=hC;y+=th)ctx.fillText(y*S,MX-5,MY+y*C+3);}
+  ctx.save();rr(ctx,MX,MY,wC*C,hC*C,CR);ctx.clip();
+  for(const p of pts){
+    const px=MX+p.x*C,py=MY+p.y*C;const isH=p.key==='topbot';
+    if(p.key==='corner'){
+      const s=Math.min(C*.92,19);
+      ctx.fillStyle='#1c1005';ctx.strokeStyle='#c09030';ctx.lineWidth=1.3;
+      rr(ctx,px-s/2,py-s/2,s,s,2);ctx.fill();rr(ctx,px-s/2,py-s/2,s,s,2);ctx.stroke();
+      const hr=Math.max(1.5,s*.18);
+      ctx.fillStyle='#d4a050';ctx.beginPath();ctx.arc(px,py,hr,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#806010';ctx.lineWidth=.7;ctx.beginPath();ctx.arc(px,py,hr*1.6,0,Math.PI*2);ctx.stroke();
+      if(C>=20){ctx.fillStyle='#c09030';ctx.font='bold 7px monospace';ctx.textAlign='center';
+        const oT=p.y===0;ctx.fillText('corner',px,oT?py-s/2-6:py+s/2+9);}
+    } else if(p.key==='side'||p.key==='topbot'){
+      const sw=isH?C*.64:C*.38,sh=isH?C*.38:C*.64;
+      ctx.fillStyle=isH?'#0c1422':'#101830';ctx.strokeStyle=isH?'#1e4870':'#305090';ctx.lineWidth=.9;
+      rr(ctx,px-sw/2,py-sh/2,sw,sh,2);ctx.fill();rr(ctx,px-sw/2,py-sh/2,sw,sh,2);ctx.stroke();
+      ctx.strokeStyle=isH?'#2a5888':'#3a5898';ctx.lineWidth=.6;ctx.setLineDash([1.5,1.5]);
+      if(isH){ctx.beginPath();ctx.moveTo(px-sw*.24,py);ctx.lineTo(px+sw*.24,py);ctx.stroke();}
+      else{ctx.beginPath();ctx.moveTo(px,py-sh*.24);ctx.lineTo(px,py+sh*.24);ctx.stroke();}
+      ctx.setLineDash([]);
+      ctx.fillStyle=isH?'#5090c0':'#6090b8';ctx.beginPath();ctx.arc(px,py,Math.max(1.2,Math.min(sw,sh)*.12),0,Math.PI*2);ctx.fill();
+      if(C>=22){
+        const lbl=isH?'top/bot':'side';
+        const oL=p.x===0,oR=p.x===wC,oT=p.y===0,oB=p.y===hC;
+        ctx.fillStyle=isH?'#3060a0':'#405090';ctx.font='6px monospace';ctx.textAlign='center';
+        const lx=oL?px-sw/2-8:oR?px+sw/2+8:px;
+        const ly=oT?py-sh/2-5:oB?py+sh/2+8:py+2;
+        ctx.fillText(lbl,lx,ly);
+      }
+    } else {
+      const s=C*.72,arm=s*.37;
+      ctx.fillStyle='#0e1420';ctx.strokeStyle='#263040';ctx.lineWidth=.7;
+      ctx.beginPath();ctx.rect(px-s/2,py-arm/2,s,arm);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.rect(px-arm/2,py-s/2,arm,s);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#3a5060';ctx.beginPath();ctx.arc(px,py,Math.max(1,s*.09),0,Math.PI*2);ctx.fill();
+      if(C>=22){ctx.fillStyle='#405060';ctx.font='6px monospace';ctx.textAlign='center';ctx.fillText('mid',px,py+s/2+8);}
+    }
+  }
+  ctx.restore();ctx.strokeStyle='#1e1e1a';ctx.lineWidth=1.5;rr(ctx,MX,MY,wC*C,hC*C,CR);ctx.stroke();
+
+  // Highlight overlay — brighten all brackets matching MHK
+  if (MHK) {
+    ctx.save(); rr(ctx,MX,MY,wC*C,hC*C,CR); ctx.clip();
+    for (const p of pts) {
+      if (p.key !== MHK) continue;
+      const px=MX+p.x*C, py=MY+p.y*C;
+      const isH=p.key==='topbot';
+      let hw,hh;
+      if (p.key==='corner')      { hw=Math.min(C*.92,19); hh=hw; }
+      else if (p.key==='side')   { hw=C*.38; hh=C*.64; }
+      else if (p.key==='topbot') { hw=C*.64; hh=C*.38; }
+      else                       { hw=C*.72; hh=C*.72; }
+      ctx.fillStyle='rgba(255,255,255,.1)';
+      rr(ctx,px-hw/2,py-hh/2,hw,hh,2); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.75)';
+      ctx.lineWidth=Math.max(1.5, Math.min(3, C*.1));
+      rr(ctx,px-hw/2,py-hh/2,hw,hh,2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  const cN=pts.filter(p=>p.key==='corner').length;
+  const sN=pts.filter(p=>p.key==='side').length;
+  const tN=pts.filter(p=>p.key==='topbot').length;
+  const mN=pts.filter(p=>p.key==='mid').length;
+
+  document.getElementById('msz').textContent=`${fmt(wC*S)} × ${fmt(hC*S)}`;
+  document.getElementById('mcnts').innerHTML = t('mountTotal', pts.length, cN, sN, tN, mN);
+
+
+  // Canvas hit detection — highlights BOM mounting rows
+  cvs.onmousemove = (e) => {
+    const rect = cvs.getBoundingClientRect();
+    const scaleX = cvs.width / dpr / rect.width;
+    const scaleY = cvs.height / dpr / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top)  * scaleY;
+    let found = null;
+    for (const p of pts) {
+      const px=MX+p.x*C, py=MY+p.y*C;
+      let hw,hh;
+      if (p.key==='corner')      { hw=Math.min(C*.92,19); hh=hw; }
+      else if (p.key==='side')   { hw=C*.38; hh=C*.64; }
+      else if (p.key==='topbot') { hw=C*.64; hh=C*.38; }
+      else                       { hw=C*.72; hh=C*.72; }
+      if (mx>=px-hw/2 && mx<=px+hw/2 && my>=py-hh/2 && my<=py+hh/2) { found=p.key; break; }
+    }
+    if (found !== MHK) {
+      MHK = found;
+      redrawMount();
+      highlightBOMRow('mount_'+MHK);
+    }
+  };
+  cvs.onmouseleave = () => {
+    if (MHK) { MHK=null; redrawMount(); highlightBOMRow(null); }
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CATALOG
+// ═══════════════════════════════════════════════════════════════
+function renderCatalog(b, pts, lay){
+  const normals=b.groups.filter(g=>g.role!=='mount');
+  const std=normals.filter(g=>g.role==='std').sort((a,z)=>z.wMm*z.hMm-a.wMm*a.hMm);
+  const tb=normals.filter(g=>g.role==='topbot').sort((a,z)=>z.wMm-a.wMm);
+  const sd=normals.filter(g=>g.role==='side').sort((a,z)=>z.hMm-a.hMm);
+  const cr=normals.filter(g=>g.role==='corner');
+
+  let h='';
+  if(std.length){h+=`<div class="cat-h">${t('catModule')}</div><div class="cat-grid">`;for(const g of std)h+=pCard(g.wMm,g.hMm,'std',g.n);h+=`</div>`;}
+  if(tb.length){h+=`<div class="cat-h">${t('catTopbot')}</div><div class="cat-grid">`;for(const g of tb)h+=pCard(g.wMm,g.hMm,'topbot',g.n);h+=`</div>`;}
+  if(sd.length){h+=`<div class="cat-h">${t('catSide')}</div><div class="cat-grid">`;for(const g of sd)h+=pCard(g.wMm,g.hMm,'side',g.n);h+=`</div>`;}
+
+  if(cr.length){
+    const cTL = lay.mods.filter(m=>m.role==='corner'&&(m.variant==='TL'||m.variant==='BL')).length;
+    const cTR = lay.mods.filter(m=>m.role==='corner'&&(m.variant==='TR'||m.variant==='BR')).length;
+    h+=`<div class="cat-h">${t('catCorner')}</div><div class="cat-grid">`;
+    if(cTL>0) h+=pCard(40,40,'corner',cTL,`${t('varTLBL')} · ${t('plate')} 25`);
+    if(cTR>0) h+=pCard(40,40,'corner',cTR,`${t('varTRBR')} · ${t('plate')} 27`);
+    h+=`</div>`;
+  }
+
+  h+=`<div class="cat-h">${t('catConn')} ${t('catConnSheets',b.connSheets)}</div><div class="cat-grid">`;
+  h+=`<div class="pc"><div class="pcw"><svg width="50" height="50" viewBox="0 0 50 50">
+    <rect x="11" y="11" width="28" height="28" rx="3" fill="#200e06" stroke="#e55c25" stroke-width="1"/>
+    <line x1="11" y1="25" x2="39" y2="25" stroke="#3a1006" stroke-width=".5" stroke-dasharray="2,2"/>
+    <line x1="25" y1="11" x2="25" y2="39" stroke="#3a1006" stroke-width=".5" stroke-dasharray="2,2"/>
+    <circle cx="11" cy="11" r="2.5" fill="#e55c25"/><circle cx="39" cy="11" r="2.5" fill="#e55c25"/>
+    <circle cx="11" cy="39" r="2.5" fill="#e55c25"/><circle cx="39" cy="39" r="2.5" fill="#e55c25"/>
+    <rect x="11" y="41" width="28" height="4" rx="1" fill="#180804" stroke="#e55c25" stroke-width=".5"/>
+  </svg></div>
+  <div class="pcn">Connector</div><div class="pcs">20×20×3.5mm</div>
+  <div class="pcp">${t('plate')} 26 · 25 ${t('perSheet')}</div><div class="pcc">×${b.connCnt}</div></div></div>`;
+
+  h+=`<div class="cat-h">${t('catMountH')}</div>`;
+  h+=`<div class="note" style="font-size:9px;margin-bottom:8px">${t('catMountNote')}</div><div class="cat-grid">`;
+  const mrows=[{key:'corner',n:b.cN,col:'#c09030'},{key:'side',n:b.sN,col:'#4070b0'},{key:'topbot',n:b.tN,col:'#305878'},{key:'mid',n:b.mN,col:'#283848'}];
+  for(const r of mrows){
+    if(!r.n)continue;
+    const M=MOUNTS[r.key];
+    h+=mountCard(M.bracket,'bracket',r.n,`${t('plate')} `+M.bpl,r.col);
+    h+=mountCard(M.dist,'dist.conn.',r.n,`${t('plate')} `+M.dpl,'#283848');
+  }
+  h+=`</div>`;
+  document.getElementById('catc').innerHTML=h;
+}
+
+function pCard(wMm,hMm,role,n,note=''){
+  const sc=Math.min(46/wMm,38/hMm),pw=wMm*sc,ph=hMm*sc,ox=(50-pw)/2,oy=(42-ph)/2;
+  const hcols=Math.round(wMm/S),hrows=Math.round(hMm/S);
+  let slots='';
+  for(let c=0;c<hcols;c++)for(let r=0;r<hrows;r++){
+    const hx=ox+(c+.5)*(pw/hcols),hy=oy+(r+.5)*(ph/hrows);
+    if(role==='corner'&&hcols===1&&hrows===1)slots+=`<circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="${Math.max(1.5,Math.min(pw,ph)*.14)}" fill="#0c0800"/>`;
+    else slots+=`<ellipse cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" rx="${Math.max(.8,pw/hcols*.078)}" ry="${Math.max(1.4,ph/hrows*.14)}" fill="#06101a"/>`;
+  }
+  const lbl={corner:'Corner module',topbot:'Top/bot module',side:'Side module',std:'Module'}[role];
+  // Exact plate number for this specific size
+  const pl = role==='corner' ? null : plateFor(role, wMm, hMm);
+  const plLabel = pl ? `пл. ${pl}` : note;
+  return `<div class="pc"><div class="pcw"><svg width="50" height="56" viewBox="0 0 50 56">
+    <rect x="${ox.toFixed(1)}" y="${oy.toFixed(1)}" width="${pw.toFixed(1)}" height="${ph.toFixed(1)}" rx="2" fill="${RF[role]}" stroke="${RB[role]}" stroke-width=".8"/>
+    ${slots}<text x="25" y="${(oy+ph+12).toFixed(1)}" font-size="7" fill="${RT[role]}" text-anchor="middle" font-family="monospace">${wMm}×${hMm}</text>
+  </svg></div>
+  <div class="pcn">${lbl}<br>${wMm}×${hMm}мм</div><div class="pcs">${wMm}×${hMm}×5.2мм</div>
+  <div class="pcp">${plLabel}</div><div class="pcc">×${n}</div></div>`;
+}
+function mountCard(name,size,n,plate,col,bdr){
+  const bc=bdr||col;
+  return `<div class="pc"><div class="pcw"><svg width="50" height="50" viewBox="0 0 50 50">
+    <rect x="10" y="10" width="30" height="30" rx="3" fill="#0a0e14" stroke="${col}" stroke-width="1"/>
+    <rect x="16" y="21" width="18" height="8" rx="1" fill="${col}" opacity=".35"/>
+    <circle cx="25" cy="25" r="3.5" fill="none" stroke="${col}" stroke-width="1"/>
+    <circle cx="25" cy="25" r="1.5" fill="${col}" opacity=".7"/>
+  </svg></div>
+  <div class="pcn">${name}</div><div class="pcs">${size}</div>
+  <div class="pcp">${plate}</div><div class="pcc">×${n}</div></div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABS & UPDATE
+// ═══════════════════════════════════════════════════════════════
+function showTab(name){
+  ['board','mount','cat'].forEach((t,i)=>{document.querySelectorAll('.tab')[i].classList.toggle('on',t===name);document.getElementById('v'+t).classList.toggle('on',t===name);});
+  if(!G)return;
+  if(name==='mount') drawMount(G.wC,G.hC,G.lay,G.pts);
+  if(name==='cat')   renderCatalog(G.bom, G.pts, G.lay);
+}
+
+function go(){
+  const wC=+document.getElementById('ws').value,hC=+document.getElementById('hs').value;
+  const di=+document.getElementById('dens').value-1;
+  const D=DENS[di];
+
+  document.getElementById('wv').textContent=fmt(wC*S);
+  document.getElementById('hv').textContent=fmt(hC*S);
+  document.getElementById('wh').textContent=`${wC} ${t('cells')} · ${fmt(wC*S)}`;
+  document.getElementById('hh').textContent=`${hC} ${t('cells')} · ${fmt(hC*S)}`;
+  document.getElementById('dv').textContent=t('densNames')[di];
+  document.getElementById('di').textContent=`↔ ${D.h*S}mm  ↕ ${D.v*S}mm`;
+
+  const pts = computeMountPts(wC,hC,D.h,D.v);
+  const lay = computeLayout(wC,hC,pts);
+  const b   = computeBOM(lay,pts);
+
+  G = {wC,hC,lay,pts,bom:b};
+
+  drawBoard(wC,hC,lay,pts);
+  renderBOM(b, lay);
+
+  const totMod=b.groups.filter(g=>g.role!=='mount').reduce((s,g)=>s+g.n,0);
+  const totBrkt=b.total*2; // each mount position = bracket + dist connector
+  document.getElementById('st1').textContent=totMod+b.connCnt+totBrkt;
+  document.getElementById('st2').textContent=totMod;
+  document.getElementById('st3').textContent=b.connCnt;
+  document.getElementById('st4').textContent=b.total;
+  document.getElementById('st5').textContent=pts.length;
+  const area=wC*S*hC*S;
+  document.getElementById('st6').textContent=area>=1e6?(area/1e6).toFixed(2)+'м²':Math.round(area/100)+'см²';
+
+  if(document.getElementById('vmount').classList.contains('on')) drawMount(wC,hC,lay,pts);
+  if(document.getElementById('vcat').classList.contains('on'))   renderCatalog(b,pts,lay);
+}
+
+applyI18n();
+go();
+</script>
+</body>
+</html>
