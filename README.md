@@ -16,27 +16,73 @@ Interactive layout calculator for the **IKEA SKADIS Modular Pegboard 3.0** — a
 
 ## How to use
 
-1. Set board **width** and **height** using the sliders (in 40mm cells)
-2. Adjust **mount density** — how frequently the board is anchored to the wall
-3. Switch between **Board layout**, **Wall mounting**, and **Parts catalog** tabs
-4. Use the **Print list** in the sidebar as your shopping/printing checklist
-5. Toggle **RU / EN** in the top-right corner to switch language
+1. Choose **print bed variant** — Mini, Standard, or XL (see below)
+2. Set board **width** and **height** using the sliders (in 40mm cells)
+3. Adjust **mount density** — how frequently the board is anchored to the wall
+4. Switch between **Board layout**, **Wall mounting**, and **Parts catalog** tabs
+5. Use the **Print list** in the sidebar as your shopping/printing checklist
+6. Toggle **RU / EN** in the top-right corner to switch language
+7. Toggle **☀ / ☾** to switch between dark and light themes
+
+## Print bed variants
+
+The 3D model comes in three variants for different printer build plate sizes. The planner supports all three — switch via the selector at the top of the sidebar.
+
+| Variant | Max module size | Build plate | Module file | Plates |
+|---|---|---|---|---|
+| **Mini** | 160×160mm (4×4 cells) | ~180×180mm | `mini_comp.3mf` | 27 plates |
+| **Standard** | 240×240mm (6×6 cells) | ~260×260mm | `standard_comp.3mf` | 27 plates |
+| **XL** | 320×320mm (8×8 cells) | ~350×350mm | `XL_comp.3mf` | 35 plates |
+
+Standard includes all mini plates (for modules ≤160mm) plus larger sizes. XL includes mini + standard + extra-large sizes.
+
+### Plate mapping per variant
+
+**Mini** (`mini_comp.3mf`):
+
+| Role | Plates | Sizes |
+|---|---|---|
+| Standard module | 01–16 | 40–160mm combinations |
+| Top & bottom | 17–20 | 40–160mm wide |
+| Side | 21–24 | 40–160mm tall |
+| Corner TL+BL / TR+BR | 25 / 27 | 40×40mm |
+| Connector | 26 | 20×20mm, 25 per sheet |
+
+**Standard** (`standard_comp.3mf`) — adds:
+
+| Role | Plates | Sizes |
+|---|---|---|
+| Standard module | 01–20 | 200–240mm combinations |
+| Top & bottom | 21–22 | 200–240mm wide |
+| Side | 23–24 | 200–240mm tall |
+| Corner TL+BL / TR+BR | 26 / 27 | 40×40mm |
+| Connector | 25 | 20×20mm, 25 per sheet |
+
+**XL** (`XL_comp.3mf`) — adds:
+
+| Role | Plates | Sizes |
+|---|---|---|
+| Standard module | 01–28 | 280–320mm combinations |
+| Top & bottom | 31–32 | 280–320mm wide |
+| Side | 29–30 | 280–320mm tall |
+| Corner TL+BL / TR+BR | 34 / 35 | 40×40mm |
+| Connector | 33 | 20×20mm, 50 per sheet |
 
 ## Module types
 
 The system uses four different border module types — they are not interchangeable:
 
-| Color | Type | Plates |
+| Color | Type | Description |
 |---|---|---|
-| 🟡 Gold | Corner module | pl. 25, 27 |
-| 🟢 Green | Top & bottom module | pl. 17–20 |
-| 🔵 Blue | Side module | pl. 21–24 |
-| ⬛ Dark | Standard module (center) | pl. 01–16 |
-| 🟠 Amber hatch | Wall bracket (replaces module) | mounting.3mf |
+| 🟡 Gold | Corner module | 4 corners only, 40×40mm |
+| 🟢 Green | Top & bottom module | Top and bottom borders |
+| 🔵 Blue | Side module | Left and right borders |
+| ⬛ Dark | Standard module | Center fill |
+| 🟠 Amber hatch | Wall bracket | Replaces module at mount point |
 
 ## Wall mounting
 
-Each mount point uses **2 parts** from `SKADIS_modular_board_3_0_mounting.3mf`:
+Each mount point uses **2 parts** from `SKADIS_modular_board_3.0_mounting.3mf`:
 
 | Part | Plates |
 |---|---|
@@ -55,11 +101,15 @@ The planner is a **single self-contained HTML file** — no dependencies, no bui
 | File | Description |
 |---|---|
 | `index.html` | The planner app |
+| `models/SKADIS_modular_board_3.0_mini_comp.3mf` | Mini variant modules (≤160mm) |
+| `models/SKADIS_modular_board_3.0_standard_comp.3mf` | Standard variant modules (200–240mm) |
+| `models/SKADIS_modular_board_3.0_XL_comp.3mf` | XL variant modules (280–320mm) |
+| `models/SKADIS_modular_board_3.0_mounting.3mf` | Wall mounting brackets (shared) |
 | `README.md` | This file |
 
 ## 3D model
 
-**IKEA SKADIS Modular Pegboard 3.0** by AdamKozakGrafika  
+**IKEA SKADIS Modular Pegboard 3.0** by AdamKozakGrafika
 → [MakerWorld](https://makerworld.com/ru/models/2572477-ikea-skadis-modular-pegboard-3-0)
 
 ---
