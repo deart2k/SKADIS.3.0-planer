@@ -269,6 +269,7 @@ function applyI18n() {
 
 function toggleLang() {
   LANG = LANG === 'en' ? 'ru' : 'en';
+  localStorage.setItem('skadis-lang', LANG);
   applyI18n();
   if (VARK) document.getElementById('varHint').textContent = t('varHints')[{mini:0,standard:1,xl:2}[VARK]];
   go(); // re-render all dynamic content
@@ -341,6 +342,7 @@ function toggleTheme(){
 function setVariant(key) {
   VARK = key;
   MAX = VARIANTS[key].max;
+  localStorage.setItem('skadis-variant', VARK);
   document.querySelectorAll('.var-btn').forEach(b => b.classList.toggle('on', b.id === 'vb-' + key));
   document.getElementById('varHint').textContent = t('varHints')[{mini:0,standard:1,xl:2}[key]];
   go();
@@ -1170,6 +1172,9 @@ function showTab(name){
 function go(){
   const wC=+document.getElementById('ws').value,hC=+document.getElementById('hs').value;
   const di=+document.getElementById('dens').value-1;
+  localStorage.setItem('skadis-width', wC);
+  localStorage.setItem('skadis-height', hC);
+  localStorage.setItem('skadis-density', di+1);
   const D=DENS[di];
 
   document.getElementById('wv').textContent=fmt(wC*S);
@@ -1205,8 +1210,18 @@ function go(){
 DARK = localStorage.getItem('skadis-theme') !== 'light';
 if (!DARK) document.documentElement.setAttribute('data-theme', 'light');
 document.getElementById('themebtn').textContent = DARK ? '\u2600' : '\u263E';
+
+LANG = localStorage.getItem('skadis-lang') || 'en';
+
+const _sw = localStorage.getItem('skadis-width');
+const _sh = localStorage.getItem('skadis-height');
+const _sd = localStorage.getItem('skadis-density');
+if (_sw) document.getElementById('ws').value = _sw;
+if (_sh) document.getElementById('hs').value = _sh;
+if (_sd) document.getElementById('dens').value = _sd;
+
 applyI18n();
-setVariant('mini');
+setVariant(localStorage.getItem('skadis-variant') || 'mini');
 </script>
 </body>
 </html>
