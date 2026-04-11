@@ -103,23 +103,28 @@ Each mount point uses **2 parts** from `SKADIS_modular_board_3.0_mounting.3mf`:
 | Side, top & bottom module distance connector | pl. 06 |
 | Mid board module distance connector | pl. 07 |
 
-## Files
+## Repository layout
 
 The planner is a **single self-contained HTML file** — no dependencies, no build step, works offline.
 
 | File | Description |
 |---|---|
 | `index.html` | The planner app |
-| `models/SKADIS_modular_board_3.0_mini_comp.3mf` | Mini variant modules (≤160mm) |
-| `models/SKADIS_modular_board_3.0_standard_comp.3mf` | Standard variant modules (200–240mm) |
-| `models/SKADIS_modular_board_3.0_XL_comp.3mf` | XL variant modules (280–320mm) |
-| `models/SKADIS_modular_board_3.0_mounting.3mf` | Wall mounting brackets (shared) |
 | `README.md` | This file |
 
 ## 3D model
 
 **IKEA SKADIS Modular Pegboard 3.0** by AdamKozakGrafika
 → [MakerWorld](https://makerworld.com/ru/models/2572477-ikea-skadis-modular-pegboard-3-0)
+
+The planner references these `.3mf` files by name, but they are **not** shipped in this repository — download them from MakerWorld:
+
+| File | Contents |
+|---|---|
+| `SKADIS_modular_board_3.0_mini_comp.3mf` | Mini variant modules (≤160mm) |
+| `SKADIS_modular_board_3.0_standard_comp.3mf` | Standard variant modules (200–240mm) |
+| `SKADIS_modular_board_3.0_XL_comp.3mf` | XL variant modules (280–320mm) |
+| `SKADIS_modular_board_3.0_mounting.3mf` | Wall mounting brackets (shared across variants) |
 
 ---
 
