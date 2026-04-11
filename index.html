@@ -142,14 +142,6 @@ canvas{display:block}
       <button class="var-btn"    id="em-row"  onclick="setExclMode('row')" data-i18n="emRow">Row</button>
       <button class="var-btn"    id="em-pt"   onclick="setExclMode('pt')"  data-i18n="emPt">Point</button>
     </div>
-    <div style="font-family:var(--sans);font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 4px" data-i18n="insetTitle">Edge inset (cells)</div>
-    <div style="font-size:10px;color:var(--t3);line-height:1.5;margin-bottom:6px" data-i18n="insetHint">Pull mounting in from a board edge while keeping the modules. The edge will overhang.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 6px;font-family:var(--mono);font-size:11px">
-      <label style="display:flex;align-items:center;gap:5px;color:var(--t2)"><span style="width:32px" data-i18n="insetT">top</span><input type="number" id="ins-t" min="0" max="20" value="0" style="width:48px;background:var(--bg);border:1px solid var(--b1);border-radius:3px;padding:2px 4px;color:var(--acc2);font-family:var(--mono)" oninput="updateInset()"></label>
-      <label style="display:flex;align-items:center;gap:5px;color:var(--t2)"><span style="width:32px" data-i18n="insetB">bot</span><input type="number" id="ins-b" min="0" max="20" value="0" style="width:48px;background:var(--bg);border:1px solid var(--b1);border-radius:3px;padding:2px 4px;color:var(--acc2);font-family:var(--mono)" oninput="updateInset()"></label>
-      <label style="display:flex;align-items:center;gap:5px;color:var(--t2)"><span style="width:32px" data-i18n="insetL">left</span><input type="number" id="ins-l" min="0" max="20" value="0" style="width:48px;background:var(--bg);border:1px solid var(--b1);border-radius:3px;padding:2px 4px;color:var(--acc2);font-family:var(--mono)" oninput="updateInset()"></label>
-      <label style="display:flex;align-items:center;gap:5px;color:var(--t2)"><span style="width:32px" data-i18n="insetR">right</span><input type="number" id="ins-r" min="0" max="20" value="0" style="width:48px;background:var(--bg);border:1px solid var(--b1);border-radius:3px;padding:2px 4px;color:var(--acc2);font-family:var(--mono)" oninput="updateInset()"></label>
-    </div>
     <div id="exclList" style="font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:8px"></div>
     <div id="exclWarn" style="font-size:11px;color:var(--acc2);line-height:1.5;margin-top:8px;padding:6px 8px;background:var(--bg);border:1px solid var(--acc2);border-radius:4px;display:none"></div>
   </div>
@@ -247,9 +239,6 @@ const I18N = {
     excl:'Mount exclusions', exclClear:'clear',
     exclHint:'Pick a mode, then click a mount point on the front view to toggle. Useful when wires or pipes hide in the wall.',
     emOff:'Off', emCol:'Column', emRow:'Row', emPt:'Point',
-    insetTitle:'Edge inset (cells)',
-    insetHint:'Pull mounting in from a board edge while keeping the modules. The edge will overhang and brackets are recomputed for the smaller mount area.',
-    insetT:'top', insetB:'bot', insetL:'left', insetR:'right',
     exclEmpty:'No exclusions. All mount points active.',
     exclCols:'Excluded columns (X)', exclRows:'Excluded rows (Y)', exclPts:'Excluded points (X,Y mm)',
     exclWarn:n=>`⚠ Large gaps between mount points (up to ${n}mm). Risk of board sag — consider increasing mount density.`,
@@ -285,9 +274,6 @@ const I18N = {
     excl:'Запреты крепления', exclClear:'сброс',
     exclHint:'Выберите режим и кликайте по точкам крепления на виде спереди. Полезно когда в стене скрыта проводка или трубы.',
     emOff:'Выкл', emCol:'Колонка', emRow:'Ряд', emPt:'Точка',
-    insetTitle:'Отступ от края (ячеек)',
-    insetHint:'Сдвинуть зону крепления внутрь от края доски, оставив сами модули. Край будет свисать, а крепления пересчитаются под уменьшенную область.',
-    insetT:'верх', insetB:'низ', insetL:'лево', insetR:'право',
     exclEmpty:'Нет исключений. Все точки крепления активны.',
     exclCols:'Исключённые колонки (X)', exclRows:'Исключённые ряды (Y)', exclPts:'Исключённые точки (X,Y мм)',
     exclWarn:n=>`⚠ Большие пролёты между точками крепления (до ${n}мм). Риск провисания — увеличьте плотность крепления.`,
@@ -390,9 +376,7 @@ function setVariant(key) {
   document.getElementById('varHint').textContent = t('varHints')[{mini:0,standard:1,xl:2}[key]];
   if (_variantInitialized && prev !== key) {
     EXCL.x.clear(); EXCL.y.clear(); EXCL.p.clear();
-    INSET = {t:0,b:0,l:0,r:0};
-    saveExclusions(); saveInset();
-    ['t','b','l','r'].forEach(k => { const el = document.getElementById('ins-'+k); if (el) el.value = 0; });
+    saveExclusions();
   }
   _variantInitialized = true;
   go();
@@ -400,9 +384,7 @@ function setVariant(key) {
 
 function resetExclAndGo() {
   EXCL.x.clear(); EXCL.y.clear(); EXCL.p.clear();
-  INSET = {t:0,b:0,l:0,r:0};
-  saveExclusions(); saveInset();
-  ['t','b','l','r'].forEach(k => { const el = document.getElementById('ins-'+k); if (el) el.value = 0; });
+  saveExclusions();
   go();
 }
 
@@ -537,38 +519,6 @@ let HK = null;  // board highlight key
 let MHK = null; // mount highlight key
 let EXCL = {x:new Set(), y:new Set(), p:new Set()}; // excluded mount columns / rows / individual points "x,y"
 let EXCL_MODE = 'off'; // 'off' | 'col' | 'row' | 'pt'
-let INSET = {t:0, b:0, l:0, r:0}; // edge insets in cells — pull mount area inward
-
-function updateInset() {
-  const wC=+document.getElementById('ws').value, hC=+document.getElementById('hs').value;
-  // INSET stores the user-facing value (number of modules to shift inward).
-  // The actual cell offset applied in computeMountPts is value+1 when value>0,
-  // because shifting by just 1 cell lands the mount edge in a "dead" position
-  // (one cell from the corner) where borderMtInner can't host a bracket.
-  // Max user value derives from cell budget: actual_used = (v>0 ? v+1 : 0).
-  const clamp = (v, max) => Math.max(0, Math.min(max, v|0));
-  const maxUser = (avail) => Math.max(0, avail - 1); // because v+1 cells are used
-  INSET.t = clamp(+document.getElementById('ins-t').value, maxUser(hC-3));
-  INSET.b = clamp(+document.getElementById('ins-b').value, maxUser(hC-3-(INSET.t?INSET.t+1:0)));
-  INSET.l = clamp(+document.getElementById('ins-l').value, maxUser(wC-3));
-  INSET.r = clamp(+document.getElementById('ins-r').value, maxUser(wC-3-(INSET.l?INSET.l+1:0)));
-  document.getElementById('ins-t').value = INSET.t;
-  document.getElementById('ins-b').value = INSET.b;
-  document.getElementById('ins-l').value = INSET.l;
-  document.getElementById('ins-r').value = INSET.r;
-  saveInset();
-  // Stale exclusions: drop ones outside the new mount area
-  EXCL.x.clear(); EXCL.y.clear(); EXCL.p.clear();
-  saveExclusions();
-  go();
-}
-function saveInset(){ localStorage.setItem('skadis-inset', JSON.stringify(INSET)); }
-function loadInset(){
-  try {
-    const s = JSON.parse(localStorage.getItem('skadis-inset') || '{"t":0,"b":0,"l":0,"r":0}');
-    INSET.t = +s.t||0; INSET.b = +s.b||0; INSET.l = +s.l||0; INSET.r = +s.r||0;
-  } catch(e) { INSET = {t:0,b:0,l:0,r:0}; }
-}
 
 function setExclMode(m) {
   EXCL_MODE = m;
@@ -625,23 +575,11 @@ function pickBounds(bounds, total, gap) {
 }
 
 function computeMountPts(wC, hC, maxH, maxV) {
-  // Compute mount points inside the inset region [l..wC-r] × [t..hC-b].
-  // The board itself is still wC×hC — only the area where brackets may sit shrinks.
-  // INSET stores user-facing module count; actual cell shift is value+1 when >0
-  // (skip the dead cell adjacent to the corner where brackets can't be placed).
-  const bump = v => (v|0) > 0 ? (v|0) + 1 : 0;
-  const l = bump(INSET.l), r = bump(INSET.r), t = bump(INSET.t), b = bump(INSET.b);
-  const wM = Math.max(3, wC - l - r); // mount-area width  (in cells)
-  const hM = Math.max(3, hC - t - b); // mount-area height (in cells)
-  const colAll = allBounds(wM, MAX);
-  const rowAll = allBounds(hM, MAX);
-  // pickBounds returns positions in the local mount-area frame [0..wM]
-  const xLocal = pickBounds(colAll, wM, maxH);
-  const yLocal = pickBounds(rowAll, hM, maxV);
-  // Translate to board coordinates
-  const xPts = xLocal.map(v => v + l);
-  const yPts = yLocal.map(v => v + t);
-  // Drop stale exclusions (positions no longer present after density / inset / size change)
+  const colAll = allBounds(wC, MAX);
+  const rowAll = allBounds(hC, MAX);
+  const xPts = pickBounds(colAll, wC, maxH);
+  const yPts = pickBounds(rowAll, hC, maxV);
+  // Drop stale exclusions (positions no longer present after density / size change)
   for (const v of [...EXCL.x]) if (!xPts.includes(v)) EXCL.x.delete(v);
   for (const v of [...EXCL.y]) if (!yPts.includes(v)) EXCL.y.delete(v);
   const xSet = new Set(xPts), ySet = new Set(yPts);
@@ -652,17 +590,18 @@ function computeMountPts(wC, hC, maxH, maxV) {
   const pts = [];
   for (const x of xPts) for (const y of yPts) {
     if (EXCL.x.has(x) || EXCL.y.has(y) || EXCL.p.has(`${x},${y}`)) continue;
-    // Key is determined by the point's REAL position on the board, not the mount area.
+    // Skip "dead" positions one cell from a board corner — the row/col one cell
+    // away from the edge is occupied by topbot/side border modules and can't
+    // host an additional mount cell. Without this filter pickBounds may pick
+    // y=hC-1 or x=wC-1 (especially with MAX=6 / MAX=8 sets) which produces a
+    // phantom row of mid-mounts overlapping the border row.
     const oL=x===0,oR=x===wC,oT=y===0,oB=y===hC;
     const isCorner=(oL||oR)&&(oT||oB);
     const isEdge=!isCorner&&(oL||oR||oT||oB);
-    // Skip "dead" positions one cell away from a board corner — no module can host a mount there.
     if (!isCorner) {
       if (oL||oR) { if (y === 1 || y === hC-1) continue; }
-      if (oT||oB) { if (x === 1 || x === wC-1) continue; }
-      if (!oL && !oR && !oT && !oB) {
-        if (x === 1 || x === wC-1 || y === 1 || y === hC-1) continue;
-      }
+      else if (oT||oB) { if (x === 1 || x === wC-1) continue; }
+      else if (x === 1 || x === wC-1 || y === 1 || y === hC-1) continue;
     }
     const dir=isEdge?(oT||oB?'topbot':'side'):null;
     const key=isCorner?'corner':isEdge?dir:'mid';
@@ -1499,8 +1438,6 @@ if (_sh) document.getElementById('hs').value = _sh;
 if (_sd) document.getElementById('dens').value = _sd;
 
 loadExclusions();
-loadInset();
-['t','b','l','r'].forEach(k => { const el = document.getElementById('ins-'+k); if (el) el.value = INSET[k]; });
 applyI18n();
 setVariant(localStorage.getItem('skadis-variant') || 'mini');
 setExclMode('off');

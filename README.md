@@ -14,7 +14,6 @@ Interactive layout calculator for the **IKEA SKADIS Modular Pegboard 3.0** — a
 - **Print list** — complete bill of materials, auto-calculated for your board size
 - **Interactive highlights** — hover a part in the list to highlight it on the board, and vice versa
 - 🆕 **Mount exclusions** *(added 2026-04-11)* — skip individual mount points, whole rows, or whole columns (e.g. when a wire runs behind that part of the wall)
-- 🆕 **Edge insets** *(added 2026-04-11)* — pull the mount area inward from any side (top / bottom / left / right) so the outer module rows overhang while brackets stay structurally sound
 
 ## How to use
 
@@ -84,18 +83,11 @@ The system uses four different border module types — they are not interchangea
 
 ## Wall mounting
 
-### Exclusions and insets 🆕
+### Mount exclusions 🆕
 
-> **New in 2026-04-11** — fine-grained control over which mount points are actually anchored to the wall.
+> **New in 2026-04-11** — skip mount points where you can't anchor to the wall (e.g. hidden wires or pipes).
 
-Sometimes you can't (or don't want to) anchor every mount point — a wire runs behind the wall, you want a row of modules to overhang a desk, or you simply want to thin out the brackets in a specific spot.
-
-The **Mount exclusions** panel offers two complementary tools:
-
-- **Exclusion modes** — pick a mode (`Column` / `Row` / `Point`) and click a mount point on the front view to remove it. Click again on an excluded point to bring it back. The selected items appear as chips below the mode buttons; press *Clear* to reset everything. Exclusions are persisted in `localStorage` and reset automatically when the board size changes.
-- **Edge insets** — pull the mount area inward from any side. Each input is in **modules** (not cells): `0` = brackets sit at the very edge (default), `1` = mount area shifted one module inward, `2` = two modules, etc. The outer module rows still get printed and assembled — they simply overhang the bracket grid. Useful for hanging the bottom row past a desk edge while keeping the rest of the board firmly anchored. The bracket grid is fully recomputed inside the inset region, so density and structural strength are preserved.
-
-> Why values are in *modules*, not cells: shifting the mount edge by just one cell would land it adjacent to a corner module, where the bracket can't be physically attached. The planner internally adds the extra cell so the math always works out.
+Pick a mode (`Column` / `Row` / `Point`) in the sidebar and click a mount point on the front view to toggle it. Click an excluded point again to bring it back. The selected items appear as chips below the mode buttons; press *Clear* to reset everything. Exclusions are persisted in `localStorage` and reset automatically when the board size changes.
 
 ### Mount parts
 
