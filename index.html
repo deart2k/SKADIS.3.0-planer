@@ -15,6 +15,7 @@
   --sf:#080e1e;--sb:#284878;--st:#4878b0;
   --df:#08121c;--db:#1c3c58;--dt:#3878a8;
   --mf:#221206;--mb:#d4a050;--mt:#e8b860;
+  --hl-bg:rgba(255,255,255,.07);--hl-bd:rgba(255,255,255,.25);
   --mono: 'SF Mono','Fira Mono','Consolas','Menlo',monospace;
   --sans: -apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
 }
@@ -28,6 +29,7 @@
   --sf:#d8e4f8;--sb:#284878;--st:#1c3868;
   --df:#dce8f4;--db:#1c3c58;--dt:#1a3458;
   --mf:#f8e8c8;--mb:#b08030;--mt:#8a6018;
+  --hl-bg:rgba(229,92,37,.12);--hl-bd:rgba(229,92,37,.45);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--sans);font-size:16px}
@@ -37,8 +39,8 @@ header{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:0 18px;
 .logo b{color:var(--t3);font-weight:400}
 .sub{font-size:12px;color:var(--t3)}
 .hbadge{margin-left:auto;font-family:var(--mono);font-size:12px;background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:3px 9px;color:var(--t2)}
-aside{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden}
-.sc-scroll{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
+aside{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
+.sc-scroll{flex:none}
 .panel{padding:13px 15px;border-bottom:1px solid var(--b1)}
 .ptitle{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:11px}
 .srow{display:flex;align-items:center;gap:7px;margin-bottom:7px}
@@ -758,8 +760,8 @@ function computeBOM(lay, pts) {
 function highlightBOMRow(hk) {
   document.querySelectorAll('.brow[data-hk]').forEach(el => {
     const active = hk && el.dataset.hk === hk;
-    el.style.background = active ? 'rgba(255,255,255,.07)' : '';
-    el.style.outline = active ? '1px solid rgba(255,255,255,.25)' : '';
+    el.style.background = active ? 'var(--hl-bg)' : '';
+    el.style.outline = active ? '1px solid var(--hl-bd)' : '';
     if (active) el.scrollIntoView({block:'nearest', behavior:'smooth'});
   });
 }
