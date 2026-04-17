@@ -93,6 +93,24 @@ canvas{display:block}
 .pcs{font-family:var(--mono);font-size:11px;color:var(--t3);text-align:center}
 .pcp{font-size:11px;color:var(--acc2);text-align:center}
 .pcc{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--acc);background:var(--bg);border:1px solid var(--b1);border-radius:8px;padding:1px 6px}
+@media(max-width:768px){
+  .app{grid-template-columns:1fr;height:auto;overflow:visible}
+  header{gap:8px;padding:0 12px}
+  .sub{display:none}
+  .hbadge{font-size:11px;padding:2px 6px}
+  aside{border-right:none;border-bottom:1px solid var(--b1);overflow-y:visible}
+  .sc-scroll{display:none}
+  .panel{padding:10px 12px}
+  .srow input[type=range]{padding:8px 0}
+  .var-btn{min-height:38px;font-size:11px}
+  main{overflow:visible;min-height:50vh}
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .view{padding:12px}
+  .cw{padding:10px;border-radius:6px;overflow-x:auto}
+  .legrow{gap:6px}
+  .leg{font-size:10px}
+  .cat-grid{grid-template-columns:repeat(auto-fill,minmax(70px,1fr))}
+}
 </style>
 </head>
 <body>
@@ -952,6 +970,7 @@ function rr(ctx,x,y,w,h,r){
 }
 function diam(ctx,cx,cy,r){ctx.beginPath();ctx.moveTo(cx,cy-r);ctx.lineTo(cx+r,cy);ctx.lineTo(cx,cy+r);ctx.lineTo(cx-r,cy);ctx.closePath();}
 function csz(wC,hC,maxW,maxH){return Math.max(5,Math.min(34,Math.floor(Math.min((maxW-80)/wC,(maxH-60)/hC))));}
+function canvasMaxW(){return Math.min(window.innerWidth<=768?window.innerWidth-36:window.innerWidth-340,1500);}
 function fmt(mm){if(mm>=1000)return(mm/1000).toFixed(2).replace(/\.?0+$/,'')+'м';if(mm>=100)return Math.round(mm/10)+'см';return mm+'мм';}
 
 // ═══════════════════════════════════════════════════════════════
@@ -961,7 +980,7 @@ function drawBoard(wC,hC,lay,pts){
   const P=TC();
   const cvs=document.getElementById('cvs');
   const {mods,conns}=lay;
-  const maxW=Math.min(window.innerWidth-340,1500),maxH=Math.min(window.innerHeight-200,900);
+  const maxW=canvasMaxW(),maxH=Math.min(window.innerWidth<=768?window.innerHeight-80:window.innerHeight-200,900);
   const MX=34,MY=24,C=csz(wC,hC,maxW,maxH);
   const tiny=C<7,small=C<11,CR=Math.min(C*.6,11);
 
@@ -1181,7 +1200,7 @@ function drawBoard(wC,hC,lay,pts){
 function drawMount(wC,hC,lay,pts){
   const P=TC();
   const cvs=document.getElementById('cvsm');
-  const maxW=Math.min(window.innerWidth-340,1500),maxH=Math.min(window.innerHeight-320,780);
+  const maxW=canvasMaxW(),maxH=Math.min(window.innerWidth<=768?window.innerHeight-80:window.innerHeight-320,780);
   const MX=34,MY=24,C=csz(wC,hC,maxW,maxH),CR=Math.min(C*.6,11);
   const W=wC*C+MX*2,H=hC*C+MY*2;
   const dpr=Math.min(window.devicePixelRatio||1,2);
@@ -1443,6 +1462,8 @@ loadExclusions();
 applyI18n();
 setVariant(localStorage.getItem('skadis-variant') || 'mini');
 setExclMode('off');
+let _resizeTimer;
+window.addEventListener('resize',()=>{clearTimeout(_resizeTimer);_resizeTimer=setTimeout(go,150);});
 </script>
 </body>
 </html>
