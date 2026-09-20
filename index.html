@@ -730,8 +730,15 @@ function computeLayout(wC, hC, pts) {
   if (iW > 0 && iH > 0) {
     const innerX = pts.filter(p=>p.x>0&&p.x<wC&&p.y>0&&p.y<hC).map(p=>p.x-1);
     const innerY = pts.filter(p=>p.x>0&&p.x<wC&&p.y>0&&p.y<hC).map(p=>p.y-1);
-    const colSegs = segsWithMountCells(iW, innerX, MAX);
-    const rowSegs = segsWithMountCells(iH, innerY, MAX);
+    // Split the centre on EVERY row and column that carries a mount, including
+    // the ones sitting on the left/right and top/bottom edges. A single-column
+    // board has no mid-board mounts at all, so keying off innerX/innerY alone
+    // let the side modules split at the mount rows while the centre modules ran
+    // straight past them — the two columns came out unaligned.
+    const breakX = [...new Set(pts.filter(p=>p.x>0&&p.x<wC).map(p=>p.x-1))].filter(v=>v>=0&&v<iW);
+    const breakY = [...new Set(pts.filter(p=>p.y>0&&p.y<hC).map(p=>p.y-1))].filter(v=>v>=0&&v<iH);
+    const colSegs = segsWithMountCells(iW, breakX, MAX);
+    const rowSegs = segsWithMountCells(iH, breakY, MAX);
     for (const rs of rowSegs) for (const cs of colSegs) {
       const isMount = innerX.includes(cs.start) && cs.size===1 &&
                       innerY.includes(rs.start) && rs.size===1;
