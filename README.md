@@ -14,11 +14,12 @@ Interactive layout calculator for the **IKEA SKADIS Modular Pegboard 3.0** — a
 - **Print list** — complete bill of materials, auto-calculated for your board size
 - **Interactive highlights** — hover a part in the list to highlight it on the board, and vice versa
 - 🆕 **Mount exclusions** *(added 2026-04-11)* — skip individual mount points, whole rows, or whole columns (e.g. when a wire runs behind that part of the wall)
+- 🆕 **Keyboard resizing** *(added 2026-09-20)* — resize the board with the arrow keys from anywhere on the page; the `⌨` button in the header shows the mapping
 
 ## How to use
 
 1. Choose **print bed variant** — Mini, Standard, or XL (see below)
-2. Set board **width** and **height** using the sliders (in 40mm cells)
+2. Set board **width** and **height** using the sliders (in 40mm cells), or the arrow keys — `←` `→` for width, `↑` `↓` for height, one cell per press
 3. Adjust **mount density** — how frequently the board is anchored to the wall
 4. Switch between **Board layout**, **Wall mounting**, and **Parts catalog** tabs
 5. Use the **Print list** in the sidebar as your shopping/printing checklist
