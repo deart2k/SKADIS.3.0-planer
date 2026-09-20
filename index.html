@@ -49,8 +49,16 @@ header{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:0 18px;
 .kbdrow+.kbdrow{margin-top:5px}
 .kbdrow span{margin-left:5px;color:var(--t2)}
 .kbdrow kbd{font-family:var(--mono);font-size:11px;background:var(--s3);border:1px solid var(--b2);border-bottom-width:2px;border-radius:3px;padding:1px 5px;color:var(--t1)}
-aside{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
-.sc-scroll{flex:none}
+aside{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden}
+/* The print list is the only part of the sidebar that scrolls: hovering a part
+   on the board scrolls its row into view, and that used to drag the whole
+   sidebar with it, pushing the size and module-set controls off the top.
+   It takes the height left over below the controls; on a viewport too short
+   for that, min-height keeps a usable list and the sidebar scrolls as before. */
+.sc-controls{flex:0 1 auto;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
+.sc-scroll{flex:1 1 0px;min-height:150px;display:flex;flex-direction:column}
+.sc-scroll>.panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+#bom{flex:1 1 auto;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
 .panel{padding:13px 15px;border-bottom:1px solid var(--b1)}
 .ptitle{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:11px}
 .srow{display:flex;align-items:center;gap:7px;margin-bottom:7px}
@@ -109,7 +117,8 @@ canvas{display:block}
   .sub{display:none}
   .kbdwrap{display:none} /* arrow-key hint is desktop-only */
   .hbadge{font-size:11px;padding:2px 6px}
-  aside{border-right:none;border-bottom:1px solid var(--b1);overflow-y:visible}
+  aside{border-right:none;border-bottom:1px solid var(--b1);overflow:visible}
+  .sc-controls{overflow:visible}
   .sc-scroll{display:none}
   .panel{padding:10px 12px}
   .srow input[type=range]{padding:8px 0}
@@ -142,6 +151,7 @@ canvas{display:block}
   </div>
 </header>
 <aside>
+  <div class="sc-controls">
   <div class="panel">
     <div class="ptitle" data-i18n="variant">Module set</div>
     <div class="var-seg">
@@ -195,6 +205,7 @@ canvas{display:block}
     <div style="font-size:11px;color:var(--t3);margin-top:7px;padding:5px 8px;background:var(--bg);border:1px solid var(--b1);border-radius:4px">
       ⚑ <span id="st5">—</span> <span data-i18n="mountPts">mount points</span> · <span id="st6">—</span>
     </div>
+  </div>
   </div>
   <div class="sc-scroll">
     <div class="panel"><div class="ptitle" data-i18n="printList">Print list</div><div id="bom"></div></div>
