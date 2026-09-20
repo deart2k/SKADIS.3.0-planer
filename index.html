@@ -631,11 +631,15 @@ function computeMountPts(wC, hC, maxH, maxV) {
 }
 
 function allBounds(total, step) {
+  // Candidate mount positions. A mount occupies its own 40mm cell, so the
+  // stride between mounts is step+1 — one max-size module plus the mount cell.
+  // Stepping a flat `step` lands every mount after the first one cell early,
+  // which shortens the run behind it and makes every module from there on
+  // step-1 cells wide for the rest of the board.
   const b = new Set([0, total, 1, total-1]);
-  let p = 1;
-  const inner = total - 2;
-  let rem = inner;
-  while (rem > 0) { const s = Math.min(rem, step); p += s; b.add(p); rem -= s; }
+  let p = 1 + step;
+  if (p < total) b.add(p);
+  while (p + step + 1 < total) { p += step + 1; b.add(p); }
   return [...b].sort((a,b)=>a-b);
 }
 
