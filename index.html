@@ -39,8 +39,26 @@ header{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:0 18px;
 .logo b{color:var(--t3);font-weight:400}
 .sub{font-size:12px;color:var(--t3)}
 .hbadge{margin-left:auto;font-family:var(--mono);font-size:12px;background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:3px 9px;color:var(--t2)}
-aside{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
-.sc-scroll{flex:none}
+.kbdwrap{position:relative;display:inline-flex}
+#kbdbtn{font-size:15px;background:var(--s3);border:1px solid var(--b2);border-radius:5px;padding:4px 10px;color:var(--t1);cursor:pointer;transition:all .12s;line-height:1}
+#kbdbtn:hover,#kbdbtn:focus-visible{border-color:var(--acc);outline:none}
+.kbdpop{position:absolute;top:calc(100% + 8px);right:0;z-index:50;background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:9px 11px;box-shadow:0 6px 20px rgba(0,0,0,.45);opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .13s,transform .13s,visibility .13s}
+.kbdwrap:hover .kbdpop,.kbdpop.open{opacity:1;visibility:visible;transform:none}
+.kbdtitle{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:7px}
+.kbdrow{display:flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap}
+.kbdrow+.kbdrow{margin-top:5px}
+.kbdrow span{margin-left:5px;color:var(--t2)}
+.kbdrow kbd{font-family:var(--mono);font-size:11px;background:var(--s3);border:1px solid var(--b2);border-bottom-width:2px;border-radius:3px;padding:1px 5px;color:var(--t1)}
+aside{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden}
+/* The print list is the only part of the sidebar that scrolls: hovering a part
+   on the board scrolls its row into view, and that used to drag the whole
+   sidebar with it, pushing the size and module-set controls off the top.
+   It takes the height left over below the controls; on a viewport too short
+   for that, min-height keeps a usable list and the sidebar scrolls as before. */
+.sc-controls{flex:0 1 auto;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
+.sc-scroll{flex:1 1 0px;min-height:150px;display:flex;flex-direction:column}
+.sc-scroll>.panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+#bom{flex:1 1 auto;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
 .panel{padding:13px 15px;border-bottom:1px solid var(--b1)}
 .ptitle{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:11px}
 .srow{display:flex;align-items:center;gap:7px;margin-bottom:7px}
@@ -97,8 +115,10 @@ canvas{display:block}
   .app{grid-template-columns:1fr;height:auto;overflow:visible}
   header{gap:8px;padding:0 12px}
   .sub{display:none}
+  .kbdwrap{display:none} /* arrow-key hint is desktop-only */
   .hbadge{font-size:11px;padding:2px 6px}
-  aside{border-right:none;border-bottom:1px solid var(--b1);overflow-y:visible}
+  aside{border-right:none;border-bottom:1px solid var(--b1);overflow:visible}
+  .sc-controls{overflow:visible}
   .sc-scroll{display:none}
   .panel{padding:10px 12px}
   .srow input[type=range]{padding:8px 0}
@@ -121,8 +141,17 @@ canvas{display:block}
   <div class="hbadge" id="hbadge">–</div>
   <button id="langbtn" onclick="toggleLang()" style="margin-left:8px;font-family:var(--mono);font-size:13px;font-weight:600;background:var(--s3);border:1px solid var(--b2);border-radius:5px;padding:5px 12px;color:var(--t1);cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor='var(--acc)'" onmouseout="this.style.borderColor='var(--b2)'">RU</button>
   <button id="themebtn" onclick="toggleTheme()" style="font-size:16px;background:var(--s3);border:1px solid var(--b2);border-radius:5px;padding:4px 10px;color:var(--t1);cursor:pointer;transition:all .12s;line-height:1" onmouseover="this.style.borderColor='var(--acc)'" onmouseout="this.style.borderColor='var(--b2)'"></button>
+  <div class="kbdwrap">
+    <button id="kbdbtn" type="button" aria-label="Keyboard shortcuts" aria-expanded="false">&#9000;</button>
+    <div class="kbdpop" id="kbdpop">
+      <div class="kbdtitle" data-i18n="kbdTitle">Resize the board</div>
+      <div class="kbdrow"><kbd>&#8592;</kbd><kbd>&#8594;</kbd><span data-i18n="width">Width</span></div>
+      <div class="kbdrow"><kbd>&#8593;</kbd><kbd>&#8595;</kbd><span data-i18n="height">Height</span></div>
+    </div>
+  </div>
 </header>
 <aside>
+  <div class="sc-controls">
   <div class="panel">
     <div class="ptitle" data-i18n="variant">Module set</div>
     <div class="var-seg">
@@ -176,6 +205,7 @@ canvas{display:block}
     <div style="font-size:11px;color:var(--t3);margin-top:7px;padding:5px 8px;background:var(--bg);border:1px solid var(--b1);border-radius:4px">
       ⚑ <span id="st5">—</span> <span data-i18n="mountPts">mount points</span> · <span id="st6">—</span>
     </div>
+  </div>
   </div>
   <div class="sc-scroll">
     <div class="panel"><div class="ptitle" data-i18n="printList">Print list</div><div id="bom"></div></div>
@@ -233,6 +263,7 @@ const I18N = {
     variant:'Module set',
     varHints:['Up to 160mm modules (4×4 cells). Mini print bed.','Up to 240mm modules (6×6 cells). Standard print bed.','Up to 320mm modules (8×8 cells). XL print bed.'],
     width:'Width', height:'Height', mountDensity:'Mount density',
+    kbdTitle:'Resize the board',
     span:'Span', dense:'Dense', sparse:'Sparse',
     vertHint:'Vertical span is stricter — sag from load.',
     total:'Total', allParts:'All parts', modules:'Modules',
@@ -268,6 +299,7 @@ const I18N = {
     variant:'Набор модулей',
     varHints:['Модули до 160мм (4×4 ячеек). Мини стол печати.','Модули до 240мм (6×6 ячеек). Стандартный стол печати.','Модули до 320мм (8×8 ячеек). XL стол печати.'],
     width:'Ширина', height:'Высота', mountDensity:'Плотность крепления',
+    kbdTitle:'Изменить размер доски',
     span:'Пролёт', dense:'Часто', sparse:'Редко',
     vertHint:'Вертикаль жёстче горизонтали — провисание от нагрузки.',
     total:'Итого', allParts:'Всего деталей', modules:'Модулей',
@@ -583,22 +615,25 @@ function redrawMount() {
 // ═══════════════════════════════════════════════════════════════
 // MOUNT POINTS
 // ═══════════════════════════════════════════════════════════════
-function pickBounds(bounds, total, gap) {
+function pickBounds(total, gap, step) {
+  // Mount positions. A mount occupies its own 40mm cell, so a stride of k whole
+  // modules plus that cell keeps every run between mounts an exact multiple of
+  // the module size — nothing is left over to fill with a partial piece.
+  //
+  // k comes from the requested spacing, so a sparser density buys more modules
+  // per stride rather than a ragged remainder. Picking positions off a fixed
+  // ladder instead meant a wide gap could skip a rung, freeing the skipped
+  // mount's cell and leaving a run of k*step+1 — one module short of clean.
+  const k = Math.max(1, Math.floor((gap - 1) / step));
+  const stride = 1 + k * step;
   const s = new Set([0, total]);
-  let last = 0;
-  while (last < total) {
-    const cands = bounds.filter(b => b > last && b <= last + gap);
-    if (!cands.length) { const n = bounds.find(b => b > last); if (n!=null){s.add(n);last=n;}else break; }
-    else { const best = Math.max(...cands); s.add(best); last = best; }
-  }
+  for (let p = stride; p < total; p += stride) s.add(p);
   return [...s].sort((a,b)=>a-b);
 }
 
 function computeMountPts(wC, hC, maxH, maxV) {
-  const colAll = allBounds(wC, MAX);
-  const rowAll = allBounds(hC, MAX);
-  const xPts = pickBounds(colAll, wC, maxH);
-  const yPts = pickBounds(rowAll, hC, maxV);
+  const xPts = pickBounds(wC, maxH, MAX);
+  const yPts = pickBounds(hC, maxV, MAX);
   // Drop stale exclusions (positions no longer present after density / size change)
   for (const v of [...EXCL.x]) if (!xPts.includes(v)) EXCL.x.delete(v);
   for (const v of [...EXCL.y]) if (!yPts.includes(v)) EXCL.y.delete(v);
@@ -628,15 +663,6 @@ function computeMountPts(wC, hC, maxH, maxV) {
     pts.push({x,y,key});
   }
   return {pts, xPts, yPts};
-}
-
-function allBounds(total, step) {
-  const b = new Set([0, total, 1, total-1]);
-  let p = 1;
-  const inner = total - 2;
-  let rem = inner;
-  while (rem > 0) { const s = Math.min(rem, step); p += s; b.add(p); rem -= s; }
-  return [...b].sort((a,b)=>a-b);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -726,8 +752,15 @@ function computeLayout(wC, hC, pts) {
   if (iW > 0 && iH > 0) {
     const innerX = pts.filter(p=>p.x>0&&p.x<wC&&p.y>0&&p.y<hC).map(p=>p.x-1);
     const innerY = pts.filter(p=>p.x>0&&p.x<wC&&p.y>0&&p.y<hC).map(p=>p.y-1);
-    const colSegs = segsWithMountCells(iW, innerX, MAX);
-    const rowSegs = segsWithMountCells(iH, innerY, MAX);
+    // Split the centre on EVERY row and column that carries a mount, including
+    // the ones sitting on the left/right and top/bottom edges. A single-column
+    // board has no mid-board mounts at all, so keying off innerX/innerY alone
+    // let the side modules split at the mount rows while the centre modules ran
+    // straight past them — the two columns came out unaligned.
+    const breakX = [...new Set(pts.filter(p=>p.x>0&&p.x<wC).map(p=>p.x-1))].filter(v=>v>=0&&v<iW);
+    const breakY = [...new Set(pts.filter(p=>p.y>0&&p.y<hC).map(p=>p.y-1))].filter(v=>v>=0&&v<iH);
+    const colSegs = segsWithMountCells(iW, breakX, MAX);
+    const rowSegs = segsWithMountCells(iH, breakY, MAX);
     for (const rs of rowSegs) for (const cs of colSegs) {
       const isMount = innerX.includes(cs.start) && cs.size===1 &&
                       innerY.includes(rs.start) && rs.size===1;
@@ -1464,6 +1497,61 @@ setVariant(localStorage.getItem('skadis-variant') || 'mini');
 setExclMode('off');
 let _resizeTimer;
 window.addEventListener('resize',()=>{clearTimeout(_resizeTimer);_resizeTimer=setTimeout(go,150);});
+
+// ═══════════════════════════════════════════════════════════════
+// KEYBOARD BOARD SIZING
+// ═══════════════════════════════════════════════════════════════
+// ←/→ resize width, ↑/↓ resize height, from anywhere on the page —
+// same one-cell step and exclusion reset as dragging the sliders.
+// The shortcuts above aren't discoverable on their own, so the header carries a
+// hint. It opens on hover for mouse users and on click for touch, where hover
+// never fires.
+const kbdBtn = document.getElementById('kbdbtn');
+const kbdPop = document.getElementById('kbdpop');
+const setKbd = open => {
+  kbdPop.classList.toggle('open', open);
+  kbdBtn.setAttribute('aria-expanded', String(open));
+};
+kbdBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  setKbd(!kbdPop.classList.contains('open'));
+});
+document.addEventListener('click', e => { if (!kbdPop.contains(e.target)) setKbd(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setKbd(false); });
+
+const SIZE_KEYS = {
+  ArrowRight: ['ws',  1],
+  ArrowLeft : ['ws', -1],
+  ArrowUp   : ['hs',  1],
+  ArrowDown : ['hs', -1],
+};
+
+window.addEventListener('keydown', e => {
+  const key = SIZE_KEYS[e.key];
+  if (!key || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+
+  // Don't steal arrows from text entry, or from the density slider,
+  // which keeps its own native keyboard control.
+  const el = document.activeElement;
+  if (el) {
+    const tag = el.tagName;
+    if (tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable) return;
+    if (tag === 'INPUT' && el.type !== 'range') return;
+    if (el.id === 'dens') return;
+  }
+
+  // Always swallow the key: stops the page scrolling, and stops a focused
+  // slider from also applying its native step (which would double it).
+  e.preventDefault();
+
+  const [id, dir] = key;
+  const slider = document.getElementById(id);
+  const next = Math.min(+slider.max, Math.max(+slider.min, +slider.value + dir));
+  if (next === +slider.value) return;
+
+  slider.value = next;
+  resetExclAndGo();
+});
 </script>
 </body>
 </html>
