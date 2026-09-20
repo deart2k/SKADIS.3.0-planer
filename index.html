@@ -583,22 +583,25 @@ function redrawMount() {
 // ═══════════════════════════════════════════════════════════════
 // MOUNT POINTS
 // ═══════════════════════════════════════════════════════════════
-function pickBounds(bounds, total, gap) {
+function pickBounds(total, gap, step) {
+  // Mount positions. A mount occupies its own 40mm cell, so a stride of k whole
+  // modules plus that cell keeps every run between mounts an exact multiple of
+  // the module size — nothing is left over to fill with a partial piece.
+  //
+  // k comes from the requested spacing, so a sparser density buys more modules
+  // per stride rather than a ragged remainder. Picking positions off a fixed
+  // ladder instead meant a wide gap could skip a rung, freeing the skipped
+  // mount's cell and leaving a run of k*step+1 — one module short of clean.
+  const k = Math.max(1, Math.floor((gap - 1) / step));
+  const stride = 1 + k * step;
   const s = new Set([0, total]);
-  let last = 0;
-  while (last < total) {
-    const cands = bounds.filter(b => b > last && b <= last + gap);
-    if (!cands.length) { const n = bounds.find(b => b > last); if (n!=null){s.add(n);last=n;}else break; }
-    else { const best = Math.max(...cands); s.add(best); last = best; }
-  }
+  for (let p = stride; p < total; p += stride) s.add(p);
   return [...s].sort((a,b)=>a-b);
 }
 
 function computeMountPts(wC, hC, maxH, maxV) {
-  const colAll = allBounds(wC, MAX);
-  const rowAll = allBounds(hC, MAX);
-  const xPts = pickBounds(colAll, wC, maxH);
-  const yPts = pickBounds(rowAll, hC, maxV);
+  const xPts = pickBounds(wC, maxH, MAX);
+  const yPts = pickBounds(hC, maxV, MAX);
   // Drop stale exclusions (positions no longer present after density / size change)
   for (const v of [...EXCL.x]) if (!xPts.includes(v)) EXCL.x.delete(v);
   for (const v of [...EXCL.y]) if (!yPts.includes(v)) EXCL.y.delete(v);
@@ -628,19 +631,6 @@ function computeMountPts(wC, hC, maxH, maxV) {
     pts.push({x,y,key});
   }
   return {pts, xPts, yPts};
-}
-
-function allBounds(total, step) {
-  // Candidate mount positions. A mount occupies its own 40mm cell, so the
-  // stride between mounts is step+1 — one max-size module plus the mount cell.
-  // Stepping a flat `step` lands every mount after the first one cell early,
-  // which shortens the run behind it and makes every module from there on
-  // step-1 cells wide for the rest of the board.
-  const b = new Set([0, total, 1, total-1]);
-  let p = 1 + step;
-  if (p < total) b.add(p);
-  while (p + step + 1 < total) { p += step + 1; b.add(p); }
-  return [...b].sort((a,b)=>a-b);
 }
 
 // ═══════════════════════════════════════════════════════════════
