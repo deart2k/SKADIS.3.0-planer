@@ -1464,6 +1464,45 @@ setVariant(localStorage.getItem('skadis-variant') || 'mini');
 setExclMode('off');
 let _resizeTimer;
 window.addEventListener('resize',()=>{clearTimeout(_resizeTimer);_resizeTimer=setTimeout(go,150);});
+
+// ═══════════════════════════════════════════════════════════════
+// KEYBOARD BOARD SIZING
+// ═══════════════════════════════════════════════════════════════
+// ←/→ resize width, ↑/↓ resize height, from anywhere on the page —
+// same one-cell step and exclusion reset as dragging the sliders.
+const SIZE_KEYS = {
+  ArrowRight: ['ws',  1],
+  ArrowLeft : ['ws', -1],
+  ArrowUp   : ['hs',  1],
+  ArrowDown : ['hs', -1],
+};
+
+window.addEventListener('keydown', e => {
+  const key = SIZE_KEYS[e.key];
+  if (!key || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+
+  // Don't steal arrows from text entry, or from the density slider,
+  // which keeps its own native keyboard control.
+  const el = document.activeElement;
+  if (el) {
+    const tag = el.tagName;
+    if (tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable) return;
+    if (tag === 'INPUT' && el.type !== 'range') return;
+    if (el.id === 'dens') return;
+  }
+
+  // Always swallow the key: stops the page scrolling, and stops a focused
+  // slider from also applying its native step (which would double it).
+  e.preventDefault();
+
+  const [id, dir] = key;
+  const slider = document.getElementById(id);
+  const next = Math.min(+slider.max, Math.max(+slider.min, +slider.value + dir));
+  if (next === +slider.value) return;
+
+  slider.value = next;
+  resetExclAndGo();
+});
 </script>
 </body>
 </html>
