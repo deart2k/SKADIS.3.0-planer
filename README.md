@@ -17,25 +17,28 @@ Interactive layout calculator for the **IKEA SKADIS Modular Pegboard 3.0** — a
 
 ## How to use
 
-1. Choose **print bed variant** — Mini, Standard, or XL (see below)
-2. Set board **width** and **height** using the sliders (in 40mm cells)
-3. Adjust **mount density** — how frequently the board is anchored to the wall
-4. Switch between **Board layout**, **Wall mounting**, and **Parts catalog** tabs
-5. Use the **Print list** in the sidebar as your shopping/printing checklist
-6. Toggle **RU / EN** in the top-right corner to switch language
-7. Toggle **☀ / ☾** to switch between dark and light themes
+1. Choose **printer bed size** — Mini (180×180), Standard (256×256), or XL (320×320)
+2. Set **max part size** width and height (limits how large each printed module can be)
+3. Set board **width** and **height** using the sliders (in 40mm cells)
+4. Adjust **mount density** — how frequently the board is anchored to the wall
+5. Switch between **Board layout**, **Wall mounting**, and **Parts catalog** tabs
+6. Use the **Print list** in the sidebar as your shopping/printing checklist
+7. Toggle **RU / EN** in the top-right corner to switch language
+8. Toggle **☀ / ☾** to switch between dark and light themes
 
-## Print bed variants
+## Printer bed size
 
-The 3D model comes in three variants for different printer build plate sizes. The planner supports all three — switch via the selector at the top of the sidebar.
+The 3D model comes in three package variants for different printer build volumes. Pick your bed in the sidebar, then set **Max part size** width/height to control how large each printed module can be (fewer larger parts vs more smaller square parts).
 
-| Variant | Max module size | Build plate | Module file | Plates |
-|---|---|---|---|---|
-| **Mini** | 160×160mm (4×4 cells) | ~180×180mm | `mini_comp.3mf` | 27 plates |
-| **Standard** | 240×240mm (6×6 cells) | ~260×260mm | `standard_comp.3mf` | 27 plates |
-| **XL** | 320×320mm (8×8 cells) | ~350×350mm | `XL_comp.3mf` | 35 plates |
+| Bed | Printer class | Max part width | Max part height | Module file | Plates |
+|---|---|---|---|---|---|
+| **Mini (180×180)** | A1 mini class | 40–160mm | 40–160mm | `mini_comp.3mf` | 27 plates |
+| **Standard (256×256)** | P1S / X1 class | 40–240mm | 40–200mm | `standard_comp.3mf` | 27 plates |
+| **XL (320×320)** | Large beds | 40–320mm | 40–320mm | `XL_comp.3mf` | 35 plates |
 
-Standard includes all mini plates (for modules ≤160mm) plus larger sizes. XL includes mini + standard + extra-large sizes.
+Standard height defaults to 200mm because P1S-class beds are deep enough for 240mm left-to-right but not always front-to-back once skirts/margins are included. Lower either axis further if you prefer smaller square modules.
+
+Standard includes all mini plates (≤160mm) plus 200–240mm sizes. XL includes mini + standard + 280–320mm sizes.
 
 ### Plate mapping per variant
 

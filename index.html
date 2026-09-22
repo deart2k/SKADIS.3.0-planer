@@ -52,6 +52,9 @@ aside{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-di
 .var-btn{flex:1;font-family:var(--mono);font-size:12px;background:none;border:none;border-radius:3px;padding:6px 8px;color:var(--t3);cursor:pointer;transition:all .12s}
 .var-btn:hover{color:var(--t2)}
 .var-btn.on{background:var(--s3);color:var(--acc);border:1px solid var(--b2)}
+.bed-btn{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2;padding:5px 3px;font-size:11px}
+.bed-btn .var-bed{font-size:9px;opacity:.65;letter-spacing:0}
+.bed-btn.on .var-bed{opacity:.85}
 .density-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:2px;padding:0 1px}
 .density-info{font-size:12px;color:var(--acc2);margin-top:6px;font-family:var(--mono)}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
@@ -124,13 +127,20 @@ canvas{display:block}
 </header>
 <aside>
   <div class="panel">
-    <div class="ptitle" data-i18n="variant">Module set</div>
-    <div class="var-seg">
-      <button class="var-btn on" onclick="setVariant('mini')" id="vb-mini">Mini</button>
-      <button class="var-btn"    onclick="setVariant('standard')" id="vb-standard">Standard</button>
-      <button class="var-btn"    onclick="setVariant('xl')" id="vb-xl">XL</button>
+    <div class="ptitle" data-i18n="variant">Printer bed size</div>
+    <div class="var-seg" id="bedSeg">
+      <button class="var-btn bed-btn on" onclick="setVariant('mini')" id="vb-mini"><span data-i18n="bedMini">Mini</span><span class="var-bed">180×180</span></button>
+      <button class="var-btn bed-btn"    onclick="setVariant('standard')" id="vb-standard"><span data-i18n="bedStd">Standard</span><span class="var-bed">256×256</span></button>
+      <button class="var-btn bed-btn"    onclick="setVariant('xl')" id="vb-xl"><span data-i18n="bedXl">XL</span><span class="var-bed">320×320</span></button>
     </div>
-    <div class="shint" id="varHint"></div>
+    <div class="shint" id="varHint" style="padding-left:0"></div>
+  </div>
+  <div class="panel">
+    <div class="ptitle" data-i18n="partSize">Max part size</div>
+    <div class="srow"><label data-i18n="width">Width</label><input type="range" id="mws" min="1" max="4" value="4" oninput="onMaxPartChange()"><div class="vbadge" id="mwv">—</div></div>
+    <div class="shint" id="mwh"></div>
+    <div class="srow"><label data-i18n="height">Height</label><input type="range" id="mhs" min="1" max="4" value="4" oninput="onMaxPartChange()"><div class="vbadge" id="mhv">—</div></div>
+    <div class="shint" id="mhh"></div>
   </div>
   <div class="panel">
     <div class="ptitle" data-i18n="boardSize">Board size</div>
@@ -230,8 +240,14 @@ let LANG = 'en';
 const I18N = {
   en: {
     subtitle:'Planner · Model by AdamKozakGrafika', boardSize:'Board size',
-    variant:'Module set',
-    varHints:['Up to 160mm modules (4×4 cells). Mini print bed.','Up to 240mm modules (6×6 cells). Standard print bed.','Up to 320mm modules (8×8 cells). XL print bed.'],
+    variant:'Printer bed size',
+    bedMini:'Mini', bedStd:'Standard', bedXl:'XL',
+    partSize:'Max part size',
+    varHints:[
+      'A1 mini class. Modules up to 160mm.',
+      'P1S / X1 class. Width up to 240mm; height up to 200mm (bed depth).',
+      'Large beds. Modules up to 320mm. Lower height if your bed is shallower.',
+    ],
     width:'Width', height:'Height', mountDensity:'Mount density',
     span:'Span', dense:'Dense', sparse:'Sparse',
     vertHint:'Vertical span is stricter — sag from load.',
@@ -265,8 +281,14 @@ const I18N = {
   },
   ru: {
     subtitle:'Планировщик · Модель от AdamKozakGrafika', boardSize:'Размеры доски',
-    variant:'Набор модулей',
-    varHints:['Модули до 160мм (4×4 ячеек). Мини стол печати.','Модули до 240мм (6×6 ячеек). Стандартный стол печати.','Модули до 320мм (8×8 ячеек). XL стол печати.'],
+    variant:'Размер стола печати',
+    bedMini:'Мини', bedStd:'Стандарт', bedXl:'XL',
+    partSize:'Макс. размер детали',
+    varHints:[
+      'Класс A1 mini. Модули до 160мм.',
+      'Класс P1S / X1. Ширина до 240мм; высота до 200мм (глубина стола).',
+      'Большие столы. Модули до 320мм. Уменьшите высоту, если стол мельче.',
+    ],
     width:'Ширина', height:'Высота', mountDensity:'Плотность крепления',
     span:'Пролёт', dense:'Часто', sparse:'Редко',
     vertHint:'Вертикаль жёстче горизонтали — провисание от нагрузки.',
@@ -390,16 +412,64 @@ let _variantInitialized = false;
 function setVariant(key) {
   const prev = VARK;
   VARK = key;
-  MAX = VARIANTS[key].max;
   localStorage.setItem('skadis-variant', VARK);
-  document.querySelectorAll('.var-btn').forEach(b => b.classList.toggle('on', b.id === 'vb-' + key));
+  ['mini','standard','xl'].forEach(k => {
+    const el = document.getElementById('vb-' + k);
+    if (el) el.classList.toggle('on', k === key);
+  });
   document.getElementById('varHint').textContent = t('varHints')[{mini:0,standard:1,xl:2}[key]];
+  syncMaxPartSliders(prev !== key);
   if (_variantInitialized && prev !== key) {
     EXCL.x.clear(); EXCL.y.clear(); EXCL.p.clear();
     saveExclusions();
   }
   _variantInitialized = true;
   go();
+}
+
+function syncMaxPartSliders(bedChanged) {
+  const V = VARIANTS[VARK];
+  const mws = document.getElementById('mws');
+  const mhs = document.getElementById('mhs');
+  const prevV = prevMaxBedKey ? VARIANTS[prevMaxBedKey] : null;
+  mws.max = V.maxW;
+  mhs.max = V.maxH;
+  let w = +mws.value;
+  let h = +mhs.value;
+  if (bedChanged && prevV) {
+    // If the user was using the previous bed's maximum, adopt the new bed's max
+    if (w >= prevV.maxW) w = V.maxW;
+    if (h >= prevV.maxH) h = V.maxH;
+  }
+  w = Math.max(1, Math.min(w || V.maxW, V.maxW));
+  h = Math.max(1, Math.min(h || V.maxH, V.maxH));
+  mws.value = w;
+  mhs.value = h;
+  MAX_W = w;
+  MAX_H = h;
+  localStorage.setItem('skadis-maxW', MAX_W);
+  localStorage.setItem('skadis-maxH', MAX_H);
+  prevMaxBedKey = VARK;
+  updateMaxPartLabels();
+}
+
+function onMaxPartChange() {
+  MAX_W = +document.getElementById('mws').value;
+  MAX_H = +document.getElementById('mhs').value;
+  localStorage.setItem('skadis-maxW', MAX_W);
+  localStorage.setItem('skadis-maxH', MAX_H);
+  updateMaxPartLabels();
+  resetExclAndGo();
+}
+
+function updateMaxPartLabels() {
+  const w = MAX_W, h = MAX_H;
+  const wMm = w * S, hMm = h * S;
+  const unit = LANG === 'ru' ? 'мм' : 'mm';
+  document.getElementById('mwv').textContent = `${wMm}${unit}`;
+  document.getElementById('mhv').textContent = `${hMm}${unit}`;
+  document.getElementById('mwh').textContent = `${w} ${t('cells')} · ${wMm}${unit}`;
+  document.getElementById('mhh').textContent = `${h} ${t('cells')} · ${hMm}${unit}`;
 }
 
 function resetExclAndGo() {
@@ -412,8 +482,10 @@ function resetExclAndGo() {
 // CONFIG
 // ═══════════════════════════════════════════════════════════════
 const S = 40; // mm per cell
-let MAX = 4;  // max cells per module — updated by setVariant()
-let VARK = 'mini'; // current variant key
+let MAX_W = 4; // max module width in cells
+let MAX_H = 4; // max module height in cells
+let VARK = 'mini'; // current bed-size key
+let prevMaxBedKey = null;
 
 const DENS = [
   {h:4,  v:3,  label:'~160×120mm'},
@@ -466,9 +538,11 @@ const XL_FILE = {
 };
 
 const VARIANTS = {
-  mini:     {max:4, connPerSheet:25, files:[MINI_FILE]},
-  standard: {max:6, connPerSheet:25, files:[MINI_FILE, STD_FILE]},
-  xl:       {max:8, connPerSheet:50, files:[MINI_FILE, STD_FILE, XL_FILE]},
+  // maxW / maxH = largest printable module in cells (40mm each)
+  // Standard height capped at 200mm for P1S-class bed depth
+  mini:     {maxW:4, maxH:4, connPerSheet:25, files:[MINI_FILE]},
+  standard: {maxW:6, maxH:5, connPerSheet:25, files:[MINI_FILE, STD_FILE]},
+  xl:       {maxW:8, maxH:8, connPerSheet:50, files:[MINI_FILE, STD_FILE, XL_FILE]},
 };
 
 // File 2: SKADIS_modular_board_3_0_mounting.3mf
@@ -595,8 +669,8 @@ function pickBounds(bounds, total, gap) {
 }
 
 function computeMountPts(wC, hC, maxH, maxV) {
-  const colAll = allBounds(wC, MAX);
-  const rowAll = allBounds(hC, MAX);
+  const colAll = allBounds(wC, MAX_W);
+  const rowAll = allBounds(hC, MAX_H);
   const xPts = pickBounds(colAll, wC, maxH);
   const yPts = pickBounds(rowAll, hC, maxV);
   // Drop stale exclusions (positions no longer present after density / size change)
@@ -613,7 +687,7 @@ function computeMountPts(wC, hC, maxH, maxV) {
     // Skip "dead" positions one cell from a board corner — the row/col one cell
     // away from the edge is occupied by topbot/side border modules and can't
     // host an additional mount cell. Without this filter pickBounds may pick
-    // y=hC-1 or x=wC-1 (especially with MAX=6 / MAX=8 sets) which produces a
+    // y=hC-1 or x=wC-1 (especially with larger MAX_W / MAX_H sets) which produces a
     // phantom row of mid-mounts overlapping the border row.
     const oL=x===0,oR=x===wC,oT=y===0,oB=y===hC;
     const isCorner=(oL||oR)&&(oT||oB);
@@ -694,12 +768,12 @@ function computeLayout(wC, hC, pts) {
   if (iH > 0) {
     const leftMt  = borderMtInner(pts,'left',  wC,hC,iH);
     const rightMt = borderMtInner(pts,'right', wC,hC,iH);
-    for (const seg of segsWithMountCells(iH, leftMt,  MAX)) {
+    for (const seg of segsWithMountCells(iH, leftMt,  MAX_H)) {
       const isMount = leftMt.includes(seg.start) && seg.size===1;
       mods.push({x:0,    y:1+seg.start, wC:1, hC:seg.size,
         role: isMount ? 'mount' : 'side', mountKey: isMount ? 'side' : null});
     }
-    for (const seg of segsWithMountCells(iH, rightMt, MAX)) {
+    for (const seg of segsWithMountCells(iH, rightMt, MAX_H)) {
       const isMount = rightMt.includes(seg.start) && seg.size===1;
       mods.push({x:wC-1, y:1+seg.start, wC:1, hC:seg.size,
         role: isMount ? 'mount' : 'side', mountKey: isMount ? 'side' : null});
@@ -710,12 +784,12 @@ function computeLayout(wC, hC, pts) {
   if (iW > 0) {
     const topMt = borderMtInner(pts,'top',    wC,hC,iW);
     const botMt = borderMtInner(pts,'bottom', wC,hC,iW);
-    for (const seg of segsWithMountCells(iW, topMt, MAX)) {
+    for (const seg of segsWithMountCells(iW, topMt, MAX_W)) {
       const isMount = topMt.includes(seg.start) && seg.size===1;
       mods.push({x:1+seg.start, y:0,    wC:seg.size, hC:1,
         role: isMount ? 'mount' : 'topbot', mountKey: isMount ? 'topbot' : null});
     }
-    for (const seg of segsWithMountCells(iW, botMt, MAX)) {
+    for (const seg of segsWithMountCells(iW, botMt, MAX_W)) {
       const isMount = botMt.includes(seg.start) && seg.size===1;
       mods.push({x:1+seg.start, y:hC-1, wC:seg.size, hC:1,
         role: isMount ? 'mount' : 'topbot', mountKey: isMount ? 'topbot' : null});
@@ -726,8 +800,8 @@ function computeLayout(wC, hC, pts) {
   if (iW > 0 && iH > 0) {
     const innerX = pts.filter(p=>p.x>0&&p.x<wC&&p.y>0&&p.y<hC).map(p=>p.x-1);
     const innerY = pts.filter(p=>p.x>0&&p.x<wC&&p.y>0&&p.y<hC).map(p=>p.y-1);
-    const colSegs = segsWithMountCells(iW, innerX, MAX);
-    const rowSegs = segsWithMountCells(iH, innerY, MAX);
+    const colSegs = segsWithMountCells(iW, innerX, MAX_W);
+    const rowSegs = segsWithMountCells(iH, innerY, MAX_H);
     for (const rs of rowSegs) for (const cs of colSegs) {
       const isMount = innerX.includes(cs.start) && cs.size===1 &&
                       innerY.includes(rs.start) && rs.size===1;
@@ -873,7 +947,7 @@ function renderBOM(b, lay) {
   document.getElementById('bom').innerHTML = h;
 }
 
-function renderExclusions(xPts, yPts, D) {
+function renderExclusions(xPts, yPts) {
   const list = document.getElementById('exclList');
   const warn = document.getElementById('exclWarn');
   const clr  = document.getElementById('exclClear');
@@ -914,18 +988,21 @@ function renderExclusions(xPts, yPts, D) {
   }
 
   // Sag check: largest gap between consecutive remaining mount X / Y positions
-  // (column/row exclusions only — point exclusions don't shrink the line span)
+  // (column/row exclusions only — point exclusions don't shrink the line span).
+  // Use a fixed safe limit (≈ Normal density), not 1.5× the current span —
+  // scaling with density inverted the warning (Very Dense fired; Sparse did not).
   const remX = xPts.filter(v => !EXCL.x.has(v));
   const remY = yPts.filter(v => !EXCL.y.has(v));
   let gapX = 0, gapY = 0;
   for (let i = 1; i < remX.length; i++) gapX = Math.max(gapX, remX[i] - remX[i-1]);
   for (let i = 1; i < remY.length; i++) gapY = Math.max(gapY, remY[i] - remY[i-1]);
-  // Threshold: 1.5× current density span. Or no remaining mount points at all.
-  const overX = gapX > D.h * 1.5;
-  const overY = gapY > D.v * 1.5;
+  const SAFE_H = DENS[2].h; // Normal: 10 cells (~400mm)
+  const SAFE_V = DENS[2].v; // Normal: 7 cells (~280mm)
+  const overX = gapX > SAFE_H;
+  const overY = gapY > SAFE_V;
   const empty = remX.length < 2 || remY.length < 2;
   if (empty || overX || overY) {
-    const worst = Math.max(overX ? gapX : 0, overY ? gapY : 0, gapX, gapY) * S;
+    const worst = Math.max(gapX, gapY) * S;
     warn.textContent = t('exclWarn', worst);
     warn.style.display = 'block';
   } else {
@@ -1416,6 +1493,7 @@ function go(){
   document.getElementById('hv').textContent=fmt(hC*S);
   document.getElementById('wh').textContent=`${wC} ${t('cells')} · ${fmt(wC*S)}`;
   document.getElementById('hh').textContent=`${hC} ${t('cells')} · ${fmt(hC*S)}`;
+  updateMaxPartLabels();
   document.getElementById('dv').textContent=t('densNames')[di];
   document.getElementById('di').textContent=`↔ ${D.h*S}mm  ↕ ${D.v*S}mm`;
 
@@ -1426,7 +1504,7 @@ function go(){
 
   G = {wC,hC,lay,pts,bom:b,xPts:mp.xPts,yPts:mp.yPts};
 
-  renderExclusions(mp.xPts, mp.yPts, D);
+  renderExclusions(mp.xPts, mp.yPts);
 
   drawBoard(wC,hC,lay,pts);
   renderBOM(b, lay);
@@ -1454,13 +1532,19 @@ LANG = localStorage.getItem('skadis-lang') || 'en';
 const _sw = localStorage.getItem('skadis-width');
 const _sh = localStorage.getItem('skadis-height');
 const _sd = localStorage.getItem('skadis-density');
+const _mw = localStorage.getItem('skadis-maxW');
+const _mh = localStorage.getItem('skadis-maxH');
 if (_sw) document.getElementById('ws').value = _sw;
 if (_sh) document.getElementById('hs').value = _sh;
 if (_sd) document.getElementById('dens').value = _sd;
+if (_mw) document.getElementById('mws').value = _mw;
+else document.getElementById('mws').value = 99; // clamp to bed max on first visit
+if (_mh) document.getElementById('mhs').value = _mh;
+else document.getElementById('mhs').value = 99;
 
 loadExclusions();
 applyI18n();
-setVariant(localStorage.getItem('skadis-variant') || 'mini');
+setVariant(localStorage.getItem('skadis-variant') || 'standard');
 setExclMode('off');
 let _resizeTimer;
 window.addEventListener('resize',()=>{clearTimeout(_resizeTimer);_resizeTimer=setTimeout(go,150);});
